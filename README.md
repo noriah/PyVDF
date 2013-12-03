@@ -56,3 +56,7 @@ Now that we have created the writer, lets set some values. Value string must be 
 Once you have made some edits, you can write the data out to a file with `write()`. You must call this whenever you want to save. This is so there isn't any excesive file I/O.
 
 If you want to undo what you have edited, call the `undo()` function. THIS WILL UNDO ALL EDITS SINCE LAST WRITE. Finally, to change the file being written to, call the `setFile(string)` function.
+
+Programs/Projects using PyVDF
+--
+* vdfedit - https://github.com/noriah/vdfedit
