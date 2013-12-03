@@ -19,7 +19,10 @@ class VDFParser:
 		
 		try:
 			with open(filename) as filec:
-				fdata = filec.read()
+				fdata = ''
+				for line in filec:
+					if not line.strip().startswith("//"):
+						fdata += line
 				filec.close()
 				self.error = False
 		except IOError as e:
@@ -39,6 +42,7 @@ class VDFParser:
 
 		data = OrderedDict() 
 		array = wrap(data)
+		path_sep = '\\\\+++\\\\/+++\\//+++//'
 		key = ''
 		string = ''
 		path = ''
@@ -54,8 +58,8 @@ class VDFParser:
 		openbrace = "{"
 		closebrace = "}"
 
-		def formatPath(string, splitter):
-			string = string.split(splitter)
+		def formatPath(string):
+			string = string.split(path_sep)
 			for i, s in enumerate(string):
 				if re.search("\.", s) != None:
 					string[i] = "[" + s + "]"
@@ -67,50 +71,38 @@ class VDFParser:
 				return [string, '', False]
 			else:
 				if array().has_key(key):
-					try:
-						raise VDFParserError(5)
-					except VDFParserError, e:
-						print("[" + e + "]Key Already Exists: " + formatPath(path + "+" + key, "+"))
+					raise VDFParserError("[5]Key Already Exists: " + formatPath(path + path_sep + key))
 				array()[key] = string
 				return ['', '', True]
 
 		def newLevel():
 			if grabKey:
-				try:
-					raise VDFParserError(2)
-				except VDFParserError, e:
-					print("[" + e + "]Something went wrong near here: " + formatPath(path, "+"))
+				raise VDFParserError("[2]Something went wrong near here: " + formatPath(path))
 
 			if array().has_key(key):
-				try:
-					raise VDFParserError(5)
-				except VDFParserError, e:
-					print("[" + e + "]Key Already Exists: " + formatPath(path + "+" + key, "+"))
+				raise VDFParserError("[5]Key Already Exists: " + formatPath(path + path_sep + key))
 			array()[key] = OrderedDict()
 			a = wrap(array()[key])
 			p = path
 			if p == '':
 				p += key
 			else:
-				p += '+' + key
+				p += path_sep + key
 
 			return [a, '', p, True]
 
 		def oldLevel():
 			if not grabKey:
-				try:
-					raise VDFParserError(2)
-				except VDFParserError, e:
-					print("[" + e + "]Something went wrong near here: " + formatPath(path, "+"))
+				raise VDFParserError("[2]Something went wrong near here: " + formatPath(path))
 			a = wrap(data)
-			full_path = path.split('+')
+			full_path = path.split(path_sep)
 			new_path = ''
 			if full_path:
 				for x in full_path[:-1]:
 					if new_path == '':
 						new_path += x
 					else:
-						new_path += '+' + x
+						new_path += path_sep + x
 					a = wrap(a()[x])
 
 			return [a, new_path, True]
@@ -126,18 +118,12 @@ class VDFParser:
 						if not (lastchar == quote and lastlastchar != escape):
 							if string:
 								if grabKey:
-									try:
-										raise VDFParserError(4)
-									except VDFParserError, e:
-										print("Invalid Data at End of File: " + string)
+									raise VDFParserError("[4]Invalid Data at End of File: " + string)
 								else:
 									update()
 				else:
 					if key != '':
-						try:
-							raise VDFParserError(4)
-						except VDFParserError, e:
-							print("Invalid Data at End of File: " + key)
+						raise VDFParserError("[4]Invalid Data at End of File: " + string)
 				break
 
 			if curchar == quote and lastchar != escape:
