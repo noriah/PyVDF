@@ -22,9 +22,9 @@ Simple
 Does what the name says, it reads a vdf and returns a useable array.
 
 ####Usage
-First, import the Class. If you are in the same folder, just drop the `PyVDF.` from the Imports. Then Give it the filename of the file to read
+First, import the Class. Then Give it the filename of the file to read
 ```Python
-from PyVDF.VDFParser import VDFParser
+from PyVDF import VDFParser
 vdf = VDFParser('string')
 ```
 You will get a warning if something went wrong, but its pretty good at fixing its own mistakes. Now to find a value from a [path] [3] (see below), just use the `find(string)` or `findMany([list])` functions:
@@ -42,9 +42,9 @@ To read a different file without declaring a new VDFParser, the `setFile('string
 A bit trickier than VDFParser, and not as straight forward
 
 ####Usage
-First, import the Class. If you are in the same folder, just drop the `PyVDF.` from the Imports. Then give the filename of a file and add in some optional data
+First, import the Class. Then give the filename of a file and add in some optional data
 ```Python
-from PyVDF.VDFWriter import VDFWriter
+from PyVDF import VDFWriter
 writer = VDFWriter('filename', data)
 ```
 The Data must be a Dictionary (Dict) or an OrderedDictionary (OrderedDict). I use OrderedDictionaries, because I like my data to come out in the same order I put it in.
