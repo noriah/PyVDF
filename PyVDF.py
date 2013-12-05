@@ -2,17 +2,19 @@ __all__ = ['VDFParser', 'VDFWriter']
 #####################################
 # PyVDF.py                          #
 # Author: noriah            #
-#                                   #
 # For Reading and Writing           #
 #    VDF Files                      #
 #   (Valve Data Format)             #
-#                                   #
 # Copyright (c) 2013 noriah #
 #####################################
 
 import re
 from collections import OrderedDict
 
+
+#############
+# VDFParser #
+#############
 class VDFParser:
 	def __init__(self, filename):
 		
@@ -206,6 +208,9 @@ class VDFParser:
 		return [self.find(p) for p in paths]
 
 
+#############
+# VDFWriter #
+#############
 class VDFWriter:
 	def __init__(self, filename, data = None):
 		self.file = filename
@@ -305,14 +310,20 @@ class VDFWriter:
 		self.data = self.olddata
 
 
-class VDFWriterError(Exception):
+##################
+# VDFParserError #
+##################
+class VDFParserError(Exception):
 	def __init__(self, value):
 		self.value = value
 	def __str__(self):
 		return repr(self.value)
 
 
-class VDFParserError(Exception):
+##################
+# VDFWriterError #
+##################
+class VDFWriterError(Exception):
 	def __init__(self, value):
 		self.value = value
 	def __str__(self):
