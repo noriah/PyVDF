@@ -39,11 +39,11 @@ class VDFParser:
 
     def readArray(self, firstRun = False):
 
-        QUOTE = ("\"")
-        ESCAPE = ("\\")
+        QUOTE = "\""
+        ESCAPE = "\\"
         WHITESPACE = ("\t", " ", "\n", "\r")
-        CONTROL_OPEN_BRACE = ("{")
-        CONTROL_CLOSE_BRACE = ("}")
+        CONTROL_OPEN_BRACE = "{"
+        CONTROL_CLOSE_BRACE = "}"
 
         MAX_RECURSION = 20
 
@@ -59,25 +59,25 @@ class VDFParser:
 
             while 1:
                 curchar = self.fdata.next()
-                if curchar in QUOTE and lastchar not in ESCAPE:
+                if curchar == QUOTE and lastchar != ESCAPE:
                     return string
-                elif curchar in ESCAPE and lastchar in ESCAPE:
+                elif curchar == ESCAPE and lastchar == ESCAPE:
                     lastchar = ''
                 else:
                     string += curchar
                 lastchar = curchar
 
-        def readUnquotedToken():
-            string = curchar
+        def readUnquotedToken(char):
+            string = char
             lastchar = ''
 
             while 1:
                 curchar = self.fdata.next()
                 if curchar in WHITESPACE:
                     return string
-                elif curchar in QUOTE and lastchar not in ESCAPE:
+                elif curchar == QUOTE and lastchar != ESCAPE:
                     raise VDFParserError("Unquoted Token hit an Unescaped Quote")
-                elif curchar in ESCAPE and lastchar in ESCAPE:
+                elif curchar == ESCAPE and lastchar == ESCAPE:
                     lastchar = ''
                 else:
                     string += curchar
@@ -98,7 +98,7 @@ class VDFParser:
             elif curchar in WHITESPACE:
                 pass
 
-            elif curchar in QUOTE:
+            elif curchar == QUOTE:
                 if grabKey:
                     k = readQuotedToken()
                     grabKey = False
@@ -106,22 +106,23 @@ class VDFParser:
                     data[k] = readQuotedToken()
                     grabKey = True
 
-            elif curchar in CONTROL_OPEN_BRACE:
+            elif curchar == CONTROL_OPEN_BRACE:
                 if grabKey:
                     raise VDFParserError("New array without a key!!!")
                 else:
                     data[k] = self.readArray()
                     grabKey = True
 
-            elif curchar in CONTROL_CLOSE_BRACE:
+            elif curchar == CONTROL_CLOSE_BRACE:
                 break
 
             else:
+                print(curchar)
                 if grabKey:
-                    k = readUnquotedToken()
+                    k = readUnquotedToken(curchar)
                     grabKey = False
                 else:
-                    data[k] = readUnquotedToken()
+                    data[k] = readUnquotedToken(curchar)
                     grabKey = True
 
         self.layers -= 1
