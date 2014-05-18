@@ -5,11 +5,13 @@ __all__ = ['VDFParser', 'VDFWriter']
 # For Reading and Writing           #
 #    VDF Files                      #
 #   (Valve Data Format)             #
-# Copyright (c) 2013 noriah #
+# Copyright (c) 2014 noriah #
 #####################################
 
 import re
 from collections import OrderedDict
+
+
 
 
 #############
@@ -17,8 +19,6 @@ from collections import OrderedDict
 #############
 class VDFParser:
 	def __init__(self, filename):
-		
-		self.data = OrderedDict()
 		
 		try:
 			with open(filename) as filec:
@@ -34,147 +34,111 @@ class VDFParser:
 			self.error = True
 			return
 
-		self.fdata = list(re.sub('!//.*!', '', fdata))
-		self.fdata.append(None)
-		self.__parse__()
+		fdata = list(re.sub('!//.*!', '', fdata))
+		fdata.append(None)
+		self.fdata = iter(fdata)
+		self.layers = 0
+		self.data = self.readArray(True)
 
-	def __parse__(self):
+	def readArray(self, firstRun = False):
 
-		if self.error:
-			return None
+		QUOTE = ("\"")
+		ESCAPE = ("\\")
+		WHITESPACE = ("\t", " ", "\n", "\r")
+		CONTROL_OPEN_BRACE = ("{")
+		CONTROL_CLOSE_BRACE = ("}")
 
-		data = OrderedDict() 
-		array = wrap(data)
-		path_sep = '\\\\+++\\\\/+++\\//+++//'
-		key = ''
-		string = ''
-		path = ''
-		grabKey = True
-		quoted = False
-		reading = False
-		lastchar = ''
-		lastlastchar = ''
+		MAX_RECURSION = 20
+
 		curchar = ''
-		whitespace = ("\t", " ", "\n", "\r")
-		quote = "\""
-		escape = "\\"
-		openbrace = "{"
-		closebrace = "}"
 
-		def formatPath(string):
-			string = string.split(path_sep)
-			for i, s in enumerate(string):
-				if re.search("\.", s) != None:
-					string[i] = "[" + s + "]"
-			return ".".join(string)
+		data = OrderedDict()
+		grabKey = True
+		self.layers += 1
 
-		def update():
-			if grabKey:
-				#key, string, grabKey
-				return [string, '', False]
-			else:
-				if array().has_key(key):
-					raise VDFParserError("[5]Key Already Exists: " + formatPath(path + path_sep + key))
-				array()[key] = string
-				return ['', '', True]
+		def readQuotedToken():
+			string = ''
+			lastchar = ''
 
-		def newLevel():
-			if grabKey:
-				raise VDFParserError("[2]Something went wrong near here: " + formatPath(path))
+			while 1:
+				curchar = self.fdata.next()
 
-			if array().has_key(key):
-				raise VDFParserError("[5]Key Already Exists: " + formatPath(path + path_sep + key))
-			array()[key] = OrderedDict()
-			a = wrap(array()[key])
-			p = path
-			if p == '':
-				p += key
-			else:
-				p += path_sep + key
+				if curchar in QUOTE and lastchar not in ESCAPE:
+					return string
 
-			return [a, '', p, True]
+				elif curchar in ESCAPE and lastchar in ESCAPE:
+					lastchar = ''
 
-		def oldLevel():
-			if not grabKey:
-				raise VDFParserError("[2]Something went wrong near here: " + formatPath(path))
-			a = wrap(data)
-			full_path = path.split(path_sep)
-			new_path = ''
-			if full_path:
-				for x in full_path[:-1]:
-					if new_path == '':
-						new_path += x
-					else:
-						new_path += path_sep + x
-					a = wrap(a()[x])
+				else:
+					string += curchar
 
-			return [a, new_path, True]
-		
-		
-		for curchar in self.fdata:
-			if not reading and curchar in whitespace:
-				continue
+				lastchar = curchar
+
+		def readUnquotedToken():
+			string = curchar
+			lastchar = ''
+
+			while 1:
+				curchar = self.fdata.next()
+
+				if curchar in WHITESPACE:
+					return string
+
+				elif curchar in QUOTE and lastchar not in ESCAPE:
+					raise VDFParserError("Unquoted Token hit an Unescaped Quote")
+
+				elif curchar in ESCAPE and lastchar in ESCAPE:
+					lastchar = ''
+
+				else:
+					string += curchar
+
+				lastchar = curchar
+
+		if(self.layers > MAX_RECURSION):
+			raise VDFParserError("Hit Maximum Layer Limit: " + str(MAX_RECURSION))
+
+		while 1:
+			curchar = self.fdata.next()
 			
 			if curchar is None:
-				if reading:
-					if not quoted:
-						if not (lastchar == quote and lastlastchar != escape):
-							if string:
-								if grabKey:
-									raise VDFParserError("[4]Invalid Data at End of File: " + string)
-								else:
-									update()
+				if firstRun:
+					break;
 				else:
-					if key != '':
-						raise VDFParserError("[4]Invalid Data at End of File: " + string)
+					raise VDFParserError("Hit EOF while reading array")
+
+			elif curchar in WHITESPACE:
+				pass
+
+			elif curchar in QUOTE:
+				if grabKey:
+					k = readQuotedToken()
+					grabKey = False
+				else:
+					data[k] = readQuotedToken()
+					grabKey = True
+
+			elif curchar in CONTROL_OPEN_BRACE:
+				if grabKey:
+					raise VDFParserError("New array without a key!!!")
+				else:
+					data[k] = self.readArray()
+					grabKey = True
+
+			elif curchar in CONTROL_CLOSE_BRACE:
 				break
 
-			if curchar == quote and lastchar != escape:
-				if reading:
-					reading = False
-					quoted = False
-					key, string, grabKey = update()
-				else:
-					reading = True
-					quoted = True
-
-			elif curchar in whitespace:
-				if reading:
-					if not quoted:
-						reading = False
-						key, string, grabKey = update()
-					else:
-						string += curchar
-			
-			elif curchar == openbrace:
-				if reading:
-					if not quoted:
-						reading = False
-						key, string, grabKey = update()
-						array, key, path, grabKey = newLevel()
-					else:
-						string += curchar
-				else:
-					array, key, path, grabKey = newLevel()
-					
-
-			elif curchar == closebrace:
-				if reading:
-					if not quoted:
-						reading = False
-						key, string, grabKey = update()
-						array, path, grabKey = oldLevel()
-					else:
-						string += curchar
-				else:
-					array, path, grabKey = oldLevel()
 			else:
-				string += curchar
-				reading = True
-			
-			lastlastchar = lastchar
-			lastchar = curchar
-		self.data = data
+				if grabKey:
+					k = readUnquotedToken()
+					grabKey = False
+				else:
+					data[k] = readUnquotedToken()
+					grabKey = True
+
+		self.layers -= 1
+		return data
+
 	
 	def setFile(self, filename):
 		self.__init__(filename)
@@ -277,7 +241,7 @@ class VDFWriter:
 					string += loop(v, tab + '\t')
 					string += tab + '}\n'
 				else:
-					string += '\t\t"' + v + '"\n'
+					string += '\t\t"' + v.replace("\"", "\\\"") + '"\n'
 			return string
 		return loop(self.data)
 
@@ -302,7 +266,7 @@ class VDFWriter:
 			print("Could not open '" + self.file + "' for writing.")
 			print(e)
 		data = self.formatData()
-		filec.write(data)
+		filec.write(data.decode("string-escape"))
 		filec.close()
 		self.olddata = self.data
 
