@@ -44,37 +44,41 @@ class VDFParser:
         WHITESPACE = ("\t", " ", "\n", "\r")
         CONTROL_OPEN_BRACE = "{"
         CONTROL_CLOSE_BRACE = "}"
+        CONTROL_OPEN_BRACKET = "["
+        CONTROL_CLOSE_BRACKET = "]"
 
         MAX_RECURSION = 20
 
         curchar = ''
 
+        lastkey = '';
+
         data = OrderedDict()
         grabKey = True
         self.layers += 1
 
-        def readQuotedToken():
+        def readEncapsedToken(char):
             string = ''
             lastchar = ''
 
             while 1:
                 curchar = self.fdata.next()
-                if curchar == QUOTE and lastchar != ESCAPE:
-                    return string
+                if curchar == char and lastchar != ESCAPE:
+                    return string.decode("string-escape")
                 elif curchar == ESCAPE and lastchar == ESCAPE:
                     lastchar = ''
                 else:
                     string += curchar
                 lastchar = curchar
 
-        def readUnquotedToken(char):
+        def readToken(char):
             string = char
             lastchar = ''
 
             while 1:
                 curchar = self.fdata.next()
                 if curchar in WHITESPACE:
-                    return string
+                    return string.decode("string-escape")
                 elif curchar == QUOTE and lastchar != ESCAPE:
                     raise VDFParserError("Unquoted Token hit an Unescaped Quote")
                 elif curchar == ESCAPE and lastchar == ESCAPE:
@@ -100,10 +104,10 @@ class VDFParser:
 
             elif curchar == QUOTE:
                 if grabKey:
-                    k = readQuotedToken()
+                    k = readEncapsedToken(QUOTE)
                     grabKey = False
                 else:
-                    data[k] = readQuotedToken()
+                    data[k] = readEncapsedToken(QUOTE)
                     grabKey = True
 
             elif curchar == CONTROL_OPEN_BRACE:
@@ -111,18 +115,25 @@ class VDFParser:
                     raise VDFParserError("New array without a key!!!")
                 else:
                     data[k] = self.readArray()
+                    lastkey = k
                     grabKey = True
 
             elif curchar == CONTROL_CLOSE_BRACE:
                 break
 
+            elif curchar == CONTROL_OPEN_BRACKET:
+                c = readEncapsedToken(CONTROL_CLOSE_BRACKET)
+                v = data.remove(k)
+                data[k + "[" + c + "]"] = v
+
+
             else:
                 print(curchar)
                 if grabKey:
-                    k = readUnquotedToken(curchar)
+                    k = readToken(curchar)
                     grabKey = False
                 else:
-                    data[k] = readUnquotedToken(curchar)
+                    data[k] = readToken(curchar)
                     grabKey = True
 
         self.layers -= 1
@@ -255,7 +266,7 @@ class VDFWriter:
             print("Could not open '" + self.file + "' for writing.")
             print(e)
         data = self.formatData()
-        filec.write(data.decode("string-escape"))
+        filec.write(data)
         filec.close()
         self.olddata = self.data
 
