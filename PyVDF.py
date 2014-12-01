@@ -27,11 +27,9 @@ class VDFParser:
           if not line.strip().startswith("//"):
             fdata += line
         filec.close()
-        self.error = False
     except IOError as e:
       print("Could not open '" + filename + "' for reading.")
       print("This is Okay if we are making a new file (say, with VDFWriter).")
-      self.error = True
       self.data = self._UseDict()
       return
 
