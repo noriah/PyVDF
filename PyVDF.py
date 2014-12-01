@@ -4,7 +4,7 @@ __all__ = ['VDFParser', 'VDFWriter']
 # Author: noriah            #
 # For Reading and Writing           #
 #    VDF Files                      #
-#   (Valve Data Format)             #
+#   (Valve Data File)               #
 # Copyright (c) 2014 noriah #
 #####################################
 
@@ -15,6 +15,9 @@ from collections import OrderedDict
 # VDFParser #
 #############
 class VDFParser:
+
+    UseDict = dict
+
     def __init__(self, filename):
         
         try:
@@ -29,15 +32,23 @@ class VDFParser:
             print("Could not open '" + filename + "' for reading.")
             print("This is Okay if we are making a new file (say, with VDFWriter).")
             self.error = True
+            self.data = self.UseDict()
             return
 
         fdata = list(re.sub('!//.*!', '', fdata))
         fdata.append(None)
         self.fdata = iter(fdata)
         self.layers = 0
-        self.data = self.readArray(True)
+        self.data = self.readArray()
 
-    def readArray(self, firstRun = False):
+    def __getitem__(self, key):
+        return self.find(key)
+
+    @staticmethod
+    def useFastDict(var = True):
+        VDFParser.UseDict = dict if var else OrderedDict
+
+    def readArray(self):
 
         QUOTE = "\""
         ESCAPE = "\\"
@@ -46,99 +57,65 @@ class VDFParser:
         CONTROL_CLOSE_BRACE = "}"
         CONTROL_OPEN_BRACKET = "["
         CONTROL_CLOSE_BRACKET = "]"
+        CONTROL_END = ("\t", " ", "\n", "\r", "{", "}", "[", "]", "\"")
 
         MAX_RECURSION = 20
 
-        curchar = ''
-
-        lastkey = '';
-
-        data = OrderedDict()
+        curchar = self.fdata.next()
+        data = VDFParser.UseDict()
         grabKey = True
         self.layers += 1
 
-        def readEncapsedToken(char):
+        def readToken(curchar, endchar):
             string = ''
-            lastchar = ''
-
-            while 1:
+            if curchar == ESCAPE: curchar = self.fdata.next()
+            if curchar in endchar: return curchar, string
+    
+            while curchar is not None:
+                string += curchar
                 curchar = self.fdata.next()
-                if curchar == char and lastchar != ESCAPE:
-                    return string.decode("string-escape")
-                elif curchar == ESCAPE and lastchar == ESCAPE:
-                    lastchar = ''
-                else:
-                    string += curchar
-                lastchar = curchar
-
-        def readToken(char):
-            string = char
-            lastchar = ''
-
-            while 1:
-                curchar = self.fdata.next()
-                if curchar in WHITESPACE:
-                    return string.decode("string-escape")
-                elif curchar == QUOTE and lastchar != ESCAPE:
-                    raise VDFParserError("Unquoted Token hit an Unescaped Quote")
-                elif curchar == ESCAPE and lastchar == ESCAPE:
-                    lastchar = ''
-                else:
-                    string += curchar
-                lastchar = curchar
+                if curchar in endchar: return curchar, string
+                if curchar == ESCAPE: curchar = self.fdata.next()
+    
+            raise VDFParserError("Hit EOF while reading token")
 
         if(self.layers > MAX_RECURSION):
             raise VDFParserError("Hit Maximum Layer Limit: " + str(MAX_RECURSION))
 
-        while 1:
-            curchar = self.fdata.next()
-            
-            if curchar is None:
-                if firstRun:
-                    break;
-                else:
-                    raise VDFParserError("Hit EOF while reading array")
-
-            elif curchar in WHITESPACE:
-                pass
-
+        while curchar is not None:
+            if curchar in WHITESPACE: pass
             elif curchar == QUOTE:
                 if grabKey:
-                    k = readEncapsedToken(QUOTE)
+                    curchar, k = readToken(self.fdata.next(), QUOTE)
                     grabKey = False
                 else:
-                    data[k] = readEncapsedToken(QUOTE)
+                    curchar, data[k] = readToken(self.fdata.next(), QUOTE)
                     grabKey = True
-
             elif curchar == CONTROL_OPEN_BRACE:
-                if grabKey:
-                    raise VDFParserError("New array without a key!!!")
+                if grabKey: raise VDFParserError("New array without a key!!!")
                 else:
                     data[k] = self.readArray()
-                    lastkey = k
                     grabKey = True
-
             elif curchar == CONTROL_CLOSE_BRACE:
-                break
-
+                self.layers -= 1
+                return data
             elif curchar == CONTROL_OPEN_BRACKET:
-                c = readEncapsedToken(CONTROL_CLOSE_BRACKET)
-                v = data.remove(k)
+                c = readToken("", CONTROL_CLOSE_BRACKET)
+                v = data.pop(k)
                 data[k + "[" + c + "]"] = v
-
-
             else:
-                print(curchar)
                 if grabKey:
-                    k = readToken(curchar)
+                    curchar, k = readToken(curchar, CONTROL_END)
                     grabKey = False
+                    continue
                 else:
-                    data[k] = readToken(curchar)
+                    curchar, data[k] = readToken(curchar, CONTROL_END)
                     grabKey = True
+                    continue
+            curchar = self.fdata.next()
 
-        self.layers -= 1
-        return data
-
+        if self.layers == 1: return data        
+        raise VDFParserError("Hit EOF while reading array")
     
     def setFile(self, filename):
         self.__init__(filename)
@@ -149,15 +126,7 @@ class VDFParser:
     def find(self, path):
         if not isinstance(path, str):
             raise TypeError("Type of param 'path' not 'string'")
-        path = re.sub('\[', '"', re.sub('\]', '"', re.sub('.\[', '"', re.sub('\].', '"', path)))).split('"')
-        q = 0
-        p = list()
-        for x in path:
-            q += 1
-            if q % 2 != 0:
-                p += x.split(".")
-            else:
-                p.append(x)
+        p = [w.replace('[', '').replace(']', '') for w in re.findall(r'[^\.\[\]]+|\[[^\[\]]*\]', path)]
         array = self.data
         for c in p:
             if array.has_key(c):
@@ -176,13 +145,35 @@ class VDFParser:
 # VDFWriter #
 #############
 class VDFWriter:
+
+    UseDict = dict
+    UseIndention = "\t"
+    UseSpacing = "\t\t"
+    UseCondensed = False
+
     def __init__(self, filename, data = None):
         self.file = filename
         if data is None:
-            self.data = OrderedDict()
+            self.data = VDFWriter.UseDict()
         else:
             self.data = data
         self.olddata = self.data
+
+    @staticmethod
+    def useFastDict(var = True):
+        VDFWriter.UseDict = dict if var else OrderedDict
+
+    @staticmethod
+    def setIndention(var = "\t"):
+        VDFWriter.UseIndention = var
+
+    @staticmethod
+    def setSpacing(var = "\t\t"):
+        VDFWriter.UseSpacing = var
+
+    @staticmethod
+    def setCondensed(var = False):
+        VDFWriter.UseCondensed = var
 
     def setFile(self, filename):
         self.file = filename
@@ -198,26 +189,18 @@ class VDFWriter:
         if not isinstance(path, str):
             raise TypeError("Type of param 'path' not type 'string'")
         array = self.data
-        if not isinstance(array, OrderedDict):
-            array = OrderedDict()
+        if not isinstance(array, dict):
+            array = VDFWriter.UseDict()
         path = path.split("=", 1)
         value = path[1]
         path = path[0]
-        path = re.sub('\[', '', re.sub('\]', '', re.sub('.\[', '"', re.sub('\].', '"', path)))).split('"')
-        q = 0
-        p = list()
-        for x in path:
-            q += 1
-            if q % 2 != 0:
-                p += x.split(".")
-            else:
-                p.append(x)
+        p = [w.replace('[', '').replace(']', '') for w in re.findall(r'[^\.\[\]]+|\[[^\[\]]*\]', path)]
         a = wrap(array)
         for c in p[:-1]:
             if not a().has_key(c):
                 a()[c] = ""
-            if not isinstance(a()[c], OrderedDict):
-                a()[c] = OrderedDict()
+            if not isinstance(a()[c], dict):
+                a()[c] = VDFWriter.UseDict()
             a = wrap(a()[c])
         if value == ";;DELETE;;":
             a().pop(p[-1], None)
@@ -236,18 +219,18 @@ class VDFWriter:
             string = ''
             for k, v in array.iteritems():
                 string += tab + '"' + k + '"'
-                if isinstance(v, OrderedDict):
-                    string += '\n' + tab + '{\n'
-                    string += loop(v, tab + '\t')
+                if isinstance(v, dict):
+                    string += ('' if VDFWriter.UseCondensed else '\n' + tab)  + '{\n'
+                    string += loop(v, tab + VDFWriter.UseIndention)
                     string += tab + '}\n'
                 else:
-                    string += '\t\t"' + v.replace("\"", "\\\"") + '"\n'
+                    string += VDFWriter.UseSpacing + '"' + v.replace("\"", "\\\"") + '"\n'
             return string
         return loop(self.data)
 
     def write(self):
         array = self.data
-        if not isinstance(array, OrderedDict):
+        if not isinstance(array, dict):
             if isinstance(array, list):
                 try:
                     raise VDFWriterError(3)
@@ -258,8 +241,6 @@ class VDFWriter:
                     raise VDFWriterError(2)
                 except VDFWriterError, e:
                     print("Data to write is not a Dictionary: " + stry(array))
-
-
         try:
             filec = open(self.file, 'w')
         except IOError as e:
