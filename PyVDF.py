@@ -11,12 +11,24 @@ __all__ = ['VDFParser', 'VDFWriter']
 import re
 from collections import OrderedDict
 
+# QUOTE = '"'
+# ESCAPE = '\\'
+# NULL = '\0'
+# WHITESPACE = ('\t', ' ')
+# NEWLINE = ('\r', '\n')
+# CONTROL_OPEN_BRACE = '{'
+# CONTROL_CLOSE_BRACE = '}'
+# CONTROL_OPEN_BRACKET = '['
+# CONTROL_CLOSE_BRACKET = ']'
+# CONTROL_END = ('\t', ' ', '\n', '\r', '{', '}', '[', ']', '"')
+
 #############
 # VDFParser #
 #############
 class VDFParser:
 
   _UseDict = dict
+  _AllowNewlines = False
 
   def __init__(self, filename):
 
@@ -29,13 +41,7 @@ class VDFParser:
       print("This is Okay if we are making a new file (say, with VDFWriter).")
       self.data = self._UseDict()
       return
-
-    # fdata = list(re.sub('!//.*!', '', fdata))
-    # fdata = list(fdata)
-    # fdata.append(None)
-    # self.fdata = iter(fdata)
-    self.layers = 0
-    self.data = self.readArray(fdata + '\0')
+    self.data = self.parse(fdata)
 
   def __getitem__(self, key):
     return self.find(key)
@@ -44,121 +50,145 @@ class VDFParser:
   def useFastDict(var = True):
     VDFParser._UseDict = dict if var else OrderedDict
 
-  def readArray(self, s):
+  @staticmethod
+  def allowTokenNewlines(var = False):
+    VDFParser._AllowNewlines = var
 
-    QUOTE = '"'
-    ESCAPE = '\\'
-    NULL = '\0'
-    WHITESPACE = ('\t', ' ')
-    NEWLINE = ('\r', '\n')
-    CONTROL_OPEN_BRACE = '{'
-    CONTROL_CLOSE_BRACE = '}'
-    CONTROL_OPEN_BRACKET = '['
-    CONTROL_CLOSE_BRACKET = ']'
-    CONTROL_END = ('\t', ' ', '\n', '\r', '{', '}', '[', ']', '"')
+  @staticmethod
+  def parse(s):
+    s += '\0'
+    charIndex, line, offset, grabKey = 0, 1, 0, True
+    UsageDict = VDFParser._UseDict
+    tokenNewLines = ValueError if VDFParser._AllowNewlines else Exception
+    data, keys = UsageDict(), list()
+    keyApp, keyPop = keys.append, keys.pop
+    tree = data
 
-    def readToken(charIndex, line, offset, endchar):
-      string = ''
-
+    while s[charIndex] != '\0':
       char = s[charIndex]
-      
-      if char in endchar:
-          return string, charIndex, line, offset
 
-      if char in NEWLINE:
-        line += 1
-        charIndex += 1
-        offset = 0
-        char = s[charIndex]
-
-      if char == ESCAPE:
-        charIndex += 1
+      while char in ('\t', ' '):
         offset += 1
-        char = s[charIndex]
-
-      while char != '\0':
-        string += char
         charIndex += 1
-        offset += 1
         char = s[charIndex]
 
-        if char in endchar:
-          return string, charIndex, line, offset 
-
-        if char in NEWLINE:
-          line += 1
+      if char == '\n':
+        if s[charIndex + 1] == '\r':
           charIndex += 1
-          offset = 0
-          char = s[charIndex]
+        line += 1
+        offset = -1
 
-        if char == ESCAPE:
+      elif char == '\r':
+        if s[charIndex + 1] == '\n':
+          charIndex += 1
+        line += 1
+        offset = -1
+
+      elif char == '/' and s[charIndex + 1] == '/':
+        line += 1
+        offset = -1
+        charIndex += 1
+        while 1:
+          charIndex += 1
+          if s[charIndex] in ('\n', '\r'):
+            break
+
+      elif char == '"':
+        string = ''
+        while 1:
           charIndex += 1
           offset += 1
           char = s[charIndex]
-  
-      raise Exception("Hit EOF while reading token")
+          if char == '\0':
+            raise Exception("Hit EOF while reading token")
 
-    def loop(charIndex, line, offset):
-      grabKey = True
-      data = VDFParser._UseDict()
-      while s[charIndex] != '\0':
-        char = s[charIndex]
+          if char == '"':
+            break
 
-        if char in WHITESPACE:
-          pass
+          if char in ('\r', '\n'):
+            try:
+              raise tokenNewLines("Newline in Token at line {}\n Use allowTokenNewlines(True) to ignore this.".format(line))
+            except ValueError:
+              line += 1
+              offset = 0
+              charIndex += 1
+              continue
+          if char == '\\':
+            charIndex += 1
+            offset += 1
+            char = s[charIndex]
+            if char == '\0':
+              raise Exception("Hit EOF while reading token")
 
-        elif char in NEWLINE:
-          line += 1
-          offset = 0
-          charIndex += 1
-          continue
-        
-        elif char == '/':
-          if s[charIndex + 1] == '/':
-            g1, charIndex, line, offset = readToken(charIndex + 1, line, offset, NEWLINE)
-            line += 1
-            offset = -1
+          string += char
 
-        elif char == QUOTE:
-          if grabKey:
-            k, charIndex, line, offset = readToken(charIndex + 1, line, offset + 1, QUOTE)
-          else:
-            data[k], charIndex, line, offset = readToken(charIndex + 1, line, offset + 1, QUOTE)
-          
-          grabKey = not grabKey
-        
-        elif char == CONTROL_OPEN_BRACE:
-          if grabKey:
-            raise Exception("Value block without a Key at line {}, column {}".format(line, offset))
-          else:
-            data[k], charIndex, line, offset = loop(charIndex + 1, line, offset)
-            grabKey = True
-        
-        elif char == CONTROL_CLOSE_BRACE:
-          if grabKey:
-            return data, charIndex, line, offset
-          else:
-            Exception("Expected value, got '}' at line {}, column {}, key {}".format(line, offset, k))
-        
-        elif char == CONTROL_OPEN_BRACKET:
-          g1, charIndex, line, offset = readToken(charIndex + 1, line, offset, CONTROL_CLOSE_BRACKET)
-        
+        if grabKey:
+          k = string
         else:
-          if grabKey:
-            k, charIndex, line, offset = readToken(charIndex, line, offset, CONTROL_END)
-          else:
-            data[k], charIndex, line, offset = readToken(charIndex, line, offset, CONTROL_END)
-          
-          grabKey = not grabKey
-          continue
+          tree[k] = string
+        grabKey = not grabKey
+      
+      elif char == '{':
+        if grabKey:
+          raise Exception("Value block without a Key at line {}, column {}".format(line, offset))
+        else:
+          keyApp(k)
+          tree[k] = UsageDict()
+          tree = tree[k]
+          grabKey = True
+      
+      elif char == '}':
+        if grabKey:
+          keyPop()
+          tree = data
+          for key in keys:
+            tree = tree[key]
+        else:
+          Exception("Expected to get a Value, got '}' instead.\n At line {}, column {}, key {}".format(line, offset, k))
+      
+      elif char == '[':
+        while 1:
+          charIndex += 1
+          offset += 1
+          if s[charIndex] == ']':
+            break
+      
+      else:
+        string = ''
+        while 1:
+          if char in ('\t', ' ', '\n', '\r', '{', '}', '[', ']', '"'):
+            break
 
-        charIndex += 1
-        offset += 1
+          if char in ('\r', '\n'):
+            raise Exception("Newline in Un-quoted Token at line {}\n Use allowTokenNewlines(True) to ignore this.".format(line))
+          if char == '\\':
+            charIndex += 1
+            offset += 1
+            char = s[charIndex]
+            if char == '\0': raise Exception("Hit EOF while reading token")
+
+          string += char
+
+          charIndex += 1
+          offset += 1
+          char = s[charIndex]
+          if char == '\0':
+            raise Exception("Hit EOF while reading token")
+        
+        if grabKey:
+          k = string
+        else:
+          tree[k] = string
+        grabKey = not grabKey
+        continue
+
+      charIndex += 1
+      offset += 1
+    
+    if len(keys) == 0:
+      return data
       
-      return data        
-      
-      #raise Exception("Hit EOF while reading array")
-    return loop(0, 1, 0)
+    raise Exception("Missing braces")
   
   def setFile(self, filename):
     self.__init__(filename)
