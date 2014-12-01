@@ -22,10 +22,7 @@ class VDFParser:
 
     try:
       with open(filename) as filec:
-        fdata = ''
-        for line in filec:
-          if not line.strip().startswith("//"):
-            fdata += line
+        fdata = filec.read()
         filec.close()
     except IOError as e:
       print("Could not open '" + filename + "' for reading.")
@@ -33,11 +30,12 @@ class VDFParser:
       self.data = self._UseDict()
       return
 
-    fdata = list(re.sub('!//.*!', '', fdata))
-    fdata.append(None)
-    self.fdata = iter(fdata)
+    # fdata = list(re.sub('!//.*!', '', fdata))
+    # fdata = list(fdata)
+    # fdata.append(None)
+    # self.fdata = iter(fdata)
     self.layers = 0
-    self.data = self.readArray()
+    self.data = self.readArray(fdata + '\0')
 
   def __getitem__(self, key):
     return self.find(key)
@@ -46,69 +44,121 @@ class VDFParser:
   def useFastDict(var = True):
     VDFParser._UseDict = dict if var else OrderedDict
 
-  def readArray(self):
+  def readArray(self, s):
 
-    QUOTE = "\""
-    ESCAPE = "\\"
-    WHITESPACE = ("\t", " ", "\n", "\r")
-    CONTROL_OPEN_BRACE = "{"
-    CONTROL_CLOSE_BRACE = "}"
-    CONTROL_OPEN_BRACKET = "["
-    CONTROL_CLOSE_BRACKET = "]"
-    CONTROL_END = ("\t", " ", "\n", "\r", "{", "}", "[", "]", "\"")
+    QUOTE = '"'
+    ESCAPE = '\\'
+    NULL = '\0'
+    WHITESPACE = ('\t', ' ')
+    NEWLINE = ('\r', '\n')
+    CONTROL_OPEN_BRACE = '{'
+    CONTROL_CLOSE_BRACE = '}'
+    CONTROL_OPEN_BRACKET = '['
+    CONTROL_CLOSE_BRACKET = ']'
+    CONTROL_END = ('\t', ' ', '\n', '\r', '{', '}', '[', ']', '"')
 
-    MAX_RECURSION = 20
-
-    curchar = self.fdata.next()
-    data = VDFParser._UseDict()
-    grabKey = True
-    self.layers += 1
-
-    def readToken(curchar, endchar):
+    def readToken(charIndex, line, offset, endchar):
       string = ''
-      if curchar == ESCAPE: curchar = self.fdata.next()
-      if curchar in endchar: return curchar, string
+
+      char = s[charIndex]
+      
+      if char in endchar:
+          return string, charIndex, line, offset
+
+      if char in NEWLINE:
+        line += 1
+        charIndex += 1
+        offset = 0
+        char = s[charIndex]
+
+      if char == ESCAPE:
+        charIndex += 1
+        offset += 1
+        char = s[charIndex]
+
+      while char != '\0':
+        string += char
+        charIndex += 1
+        offset += 1
+        char = s[charIndex]
+
+        if char in endchar:
+          return string, charIndex, line, offset 
+
+        if char in NEWLINE:
+          line += 1
+          charIndex += 1
+          offset = 0
+          char = s[charIndex]
+
+        if char == ESCAPE:
+          charIndex += 1
+          offset += 1
+          char = s[charIndex]
   
-      while curchar is not None:
-        string += curchar
-        curchar = self.fdata.next()
-        if curchar in endchar: return curchar, string
-        if curchar == ESCAPE: curchar = self.fdata.next()
-  
-      raise VDFParserError("Hit EOF while reading token")
+      raise Exception("Hit EOF while reading token")
 
-    if(self.layers > MAX_RECURSION):
-      raise VDFParserError("Hit Maximum Layer Limit: " + str(MAX_RECURSION))
+    def loop(charIndex, line, offset):
+      grabKey = True
+      data = VDFParser._UseDict()
+      while s[charIndex] != '\0':
+        char = s[charIndex]
 
-    while curchar is not None:
-      if curchar in WHITESPACE: pass
-      elif curchar == QUOTE:
-        if grabKey:
-          curchar, k = readToken(self.fdata.next(), QUOTE)
-        else:
-          curchar, data[k] = readToken(self.fdata.next(), QUOTE)
-        grabKey = not grabKey
-      elif curchar == CONTROL_OPEN_BRACE:
-        if grabKey: raise VDFParserError("New array without a key!!!")
-        else:
-          data[k] = self.readArray()
-          grabKey = True
-      elif curchar == CONTROL_CLOSE_BRACE:
-        self.layers -= 1
-        return data
-      elif curchar == CONTROL_OPEN_BRACKET:
-        curchar, b = readToken(self.fdata.next(), CONTROL_CLOSE_BRACKET)
-      else:
-        if grabKey:
-          curchar, k = readToken(curchar, CONTROL_END)
-        else:
-          curchar, data[k] = readToken(curchar, CONTROL_END)
-        grabKey = not grabKey
-        continue
-      curchar = self.fdata.next()
+        if char in WHITESPACE:
+          pass
 
-    if self.layers == 1: return data        
-    raise VDFParserError("Hit EOF while reading array")
+        elif char in NEWLINE:
+          line += 1
+          offset = 0
+          charIndex += 1
+          continue
+        
+        elif char == '/':
+          if s[charIndex + 1] == '/':
+            g1, charIndex, line, offset = readToken(charIndex + 1, line, offset, NEWLINE)
+            line += 1
+            offset = -1
+
+        elif char == QUOTE:
+          if grabKey:
+            k, charIndex, line, offset = readToken(charIndex + 1, line, offset + 1, QUOTE)
+          else:
+            data[k], charIndex, line, offset = readToken(charIndex + 1, line, offset + 1, QUOTE)
+          
+          grabKey = not grabKey
+        
+        elif char == CONTROL_OPEN_BRACE:
+          if grabKey:
+            raise Exception("Value block without a Key at line {}, column {}".format(line, offset))
+          else:
+            data[k], charIndex, line, offset = loop(charIndex + 1, line, offset)
+            grabKey = True
+        
+        elif char == CONTROL_CLOSE_BRACE:
+          if grabKey:
+            return data, charIndex, line, offset
+          else:
+            Exception("Expected value, got '}' at line {}, column {}, key {}".format(line, offset, k))
+        
+        elif char == CONTROL_OPEN_BRACKET:
+          g1, charIndex, line, offset = readToken(charIndex + 1, line, offset, CONTROL_CLOSE_BRACKET)
+        
+        else:
+          if grabKey:
+            k, charIndex, line, offset = readToken(charIndex, line, offset, CONTROL_END)
+          else:
+            data[k], charIndex, line, offset = readToken(charIndex, line, offset, CONTROL_END)
+          
+          grabKey = not grabKey
+          continue
+
+        charIndex += 1
+        offset += 1
+      
+      return data        
+      
+      #raise Exception("Hit EOF while reading array")
+    return loop(0, 1, 0)
   
   def setFile(self, filename):
     self.__init__(filename)
@@ -150,7 +200,6 @@ class VDFWriter:
       self.data = VDFWriter._UseDict()
     else:
       self.data = data
-    self.olddata = self.data
 
   @staticmethod
   def useFastDict(var = True):
@@ -210,7 +259,6 @@ class VDFWriter:
 
   def setData(self, data):
     self.data = data
-    self.olddata = data
 
   def getData(self):
     return self.data
@@ -221,9 +269,7 @@ class VDFWriter:
     array = self.data
     if not isinstance(array, dict):
       array = VDFWriter._UseDict()
-    path = path.split("=", 1)
-    value = path[1]
-    path = path[0]
+    path, value = path.split("=", 1)
     p = [w.replace('[', '').replace(']', '') for w in re.findall(r'[^\.\[\]]+|\[[^\[\]]*\]', path)]
     a = wrap(array)
     for c in p[:-1]:
@@ -245,16 +291,6 @@ class VDFWriter:
 
   def write(self):
     VDFWriter.writeData(self.file, self.data)
-
-
-##################
-# VDFParserError #
-##################
-class VDFParserError(Exception):
-  def __init__(self, value):
-    self.value = value
-  def __str__(self):
-    return repr(self.value)
 
 
 ##################
