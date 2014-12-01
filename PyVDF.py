@@ -16,10 +16,10 @@ from collections import OrderedDict
 #############
 class VDFParser:
 
-    UseDict = dict
+    _UseDict = dict
 
     def __init__(self, filename):
-        
+
         try:
             with open(filename) as filec:
                 fdata = ''
@@ -32,7 +32,7 @@ class VDFParser:
             print("Could not open '" + filename + "' for reading.")
             print("This is Okay if we are making a new file (say, with VDFWriter).")
             self.error = True
-            self.data = self.UseDict()
+            self.data = self._UseDict()
             return
 
         fdata = list(re.sub('!//.*!', '', fdata))
@@ -46,7 +46,7 @@ class VDFParser:
 
     @staticmethod
     def useFastDict(var = True):
-        VDFParser.UseDict = dict if var else OrderedDict
+        VDFParser._UseDict = dict if var else OrderedDict
 
     def readArray(self):
 
@@ -62,7 +62,7 @@ class VDFParser:
         MAX_RECURSION = 20
 
         curchar = self.fdata.next()
-        data = VDFParser.UseDict()
+        data = VDFParser._UseDict()
         grabKey = True
         self.layers += 1
 
@@ -87,10 +87,9 @@ class VDFParser:
             elif curchar == QUOTE:
                 if grabKey:
                     curchar, k = readToken(self.fdata.next(), QUOTE)
-                    grabKey = False
                 else:
                     curchar, data[k] = readToken(self.fdata.next(), QUOTE)
-                    grabKey = True
+                grabKey = not grabKey
             elif curchar == CONTROL_OPEN_BRACE:
                 if grabKey: raise VDFParserError("New array without a key!!!")
                 else:
@@ -100,18 +99,14 @@ class VDFParser:
                 self.layers -= 1
                 return data
             elif curchar == CONTROL_OPEN_BRACKET:
-                c = readToken("", CONTROL_CLOSE_BRACKET)
-                v = data.pop(k)
-                data[k + "[" + c + "]"] = v
+                curchar, b = readToken(self.fdata.next(), CONTROL_CLOSE_BRACKET)
             else:
                 if grabKey:
                     curchar, k = readToken(curchar, CONTROL_END)
-                    grabKey = False
-                    continue
                 else:
                     curchar, data[k] = readToken(curchar, CONTROL_END)
-                    grabKey = True
-                    continue
+                grabKey = not grabKey
+                continue
             curchar = self.fdata.next()
 
         if self.layers == 1: return data        
@@ -146,34 +141,71 @@ class VDFParser:
 #############
 class VDFWriter:
 
-    UseDict = dict
-    UseIndention = "\t"
-    UseSpacing = "\t\t"
-    UseCondensed = False
+    _UseDict = dict
+    _UseIndention = "\t"
+    _UseSpacing = "\t\t"
+    _UseCondensed = False
 
     def __init__(self, filename, data = None):
         self.file = filename
         if data is None:
-            self.data = VDFWriter.UseDict()
+            self.data = VDFWriter._UseDict()
         else:
             self.data = data
         self.olddata = self.data
 
     @staticmethod
     def useFastDict(var = True):
-        VDFWriter.UseDict = dict if var else OrderedDict
+        VDFWriter._UseDict = dict if var else OrderedDict
 
     @staticmethod
     def setIndention(var = "\t"):
-        VDFWriter.UseIndention = var
+        VDFWriter._UseIndention = var
 
     @staticmethod
     def setSpacing(var = "\t\t"):
-        VDFWriter.UseSpacing = var
+        VDFWriter._UseSpacing = var
 
     @staticmethod
     def setCondensed(var = False):
-        VDFWriter.UseCondensed = var
+        VDFWriter._UseCondensed = var
+
+    @staticmethod
+    def __format_data__(data):
+        def loop(array, tab=''):
+            string = ''
+            for k, v in array.iteritems():
+                string += tab + '"' + k + '"'
+                if isinstance(v, dict):
+                    string += ('' if VDFWriter._UseCondensed else '\n' + tab)  + '{\n'
+                    string += loop(v, tab + VDFWriter._UseIndention)
+                    string += tab + '}\n'
+                else:
+                    string += VDFWriter._UseSpacing + '"' + v.replace("\"", "\\\"") + '"\n'
+            return string
+        return loop(data)
+
+    @staticmethod
+    def writeData(filename, data):
+        if not isinstance(data, dict):
+            if isinstance(data, list):
+                try:
+                    raise VDFWriterError(3)
+                except VDFWriterError, e:
+                    print("Cannot write out List Data: " + str(data))
+            else:
+                try:
+                    raise VDFWriterError(2)
+                except VDFWriterError, e:
+                    print("Data to write is not a Dictionary: " + str(data))
+        try:
+            filec = open(filename, 'w')
+        except IOError as e:
+            print("Could not open '" + filename + "' for writing.")
+            print(e)
+        data = VDFWriter.__format_data__(data)
+        filec.write(data)
+        filec.close()
 
     def setFile(self, filename):
         self.file = filename
@@ -190,7 +222,7 @@ class VDFWriter:
             raise TypeError("Type of param 'path' not type 'string'")
         array = self.data
         if not isinstance(array, dict):
-            array = VDFWriter.UseDict()
+            array = VDFWriter._UseDict()
         path = path.split("=", 1)
         value = path[1]
         path = path[0]
@@ -200,7 +232,7 @@ class VDFWriter:
             if not a().has_key(c):
                 a()[c] = ""
             if not isinstance(a()[c], dict):
-                a()[c] = VDFWriter.UseDict()
+                a()[c] = VDFWriter._UseDict()
             a = wrap(a()[c])
         if value == ";;DELETE;;":
             a().pop(p[-1], None)
@@ -213,46 +245,8 @@ class VDFWriter:
             raise TypeError("Type of param 'paths' not type 'list'")
         [self.edit(p) for p in paths]
 
-    def formatData(self, data = None):
-        data = self.data if data is None else data
-        def loop(array, tab=''):
-            string = ''
-            for k, v in array.iteritems():
-                string += tab + '"' + k + '"'
-                if isinstance(v, dict):
-                    string += ('' if VDFWriter.UseCondensed else '\n' + tab)  + '{\n'
-                    string += loop(v, tab + VDFWriter.UseIndention)
-                    string += tab + '}\n'
-                else:
-                    string += VDFWriter.UseSpacing + '"' + v.replace("\"", "\\\"") + '"\n'
-            return string
-        return loop(self.data)
-
     def write(self):
-        array = self.data
-        if not isinstance(array, dict):
-            if isinstance(array, list):
-                try:
-                    raise VDFWriterError(3)
-                except VDFWriterError, e:
-                    print("Cannot write out List Data: " + str(array))
-            else:
-                try:
-                    raise VDFWriterError(2)
-                except VDFWriterError, e:
-                    print("Data to write is not a Dictionary: " + stry(array))
-        try:
-            filec = open(self.file, 'w')
-        except IOError as e:
-            print("Could not open '" + self.file + "' for writing.")
-            print(e)
-        data = self.formatData()
-        filec.write(data)
-        filec.close()
-        self.olddata = self.data
-
-    def undo(self):
-        self.data = self.olddata
+        VDFWriter.writeData(self.file, self.data)
 
 
 ##################
