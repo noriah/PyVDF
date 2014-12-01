@@ -1,7 +1,7 @@
 PyVDF
 ==
 
-A set of Python Classes to read and write VDF (Valve Data Format) files.
+A set of Python Classes to read and write VDFs (Valve Data Files).
 
 ###What is a VDF?
 https://developer.valvesoftware.com/wiki/KeyValues#File_Format
