@@ -54,70 +54,59 @@ class PyVDF:
   @staticmethod
   def parse(s):
     s += '\0'
-    ci, line, offset, grabKey = 0, 1, 0, True
+    ci = 0
+    line = 0
+    grabKey = True
     UsageDict = PyVDF._UseDict
     tokenNewLines = ValueError if PyVDF._AllowNewlines else Exception
-    data, keys = UsageDict(), list()
-    keyApp, keyPop = keys.append, keys.pop
+    data = UsageDict()
+    keys = list()
+    keyApp = keys.append
+    keyPop = keys.pop
     tree = data
 
-    while s[ci] != '\0':
+    if PyVDF._AllowNewlines:
+      re_quoted_token = re.compile(r'^"((?:\\.|[^"])*)"', re.M)
+    else:
+      re_quoted_token = re.compile(r'^"((?:\\.|[^"])*)"')
+
+    re_unquoted_token = re.compile(r'^((?:\\.|[^\\"\s\{\}\[\]])*)')
+
+    while 1:
       char = s[ci]
 
       while char in ('\t', ' '):
-        offset += 1
         ci += 1
         char = s[ci]
 
-      if char == '\n':
-        if s[ci + 1] == '\r':
-          ci += 1
-        line += 1
-        offset = -1
-
-      elif char == '\r':
-        if s[ci + 1] == '\n':
-          ci += 1
-        line += 1
-        offset = -1
-
-      elif char == '/' and s[ci + 1] == '/':
-        line += 1
-        offset = -1
-        ci += 1
-        while 1:
-          ci += 1
-          if s[ci] in ('\n', '\r'):
-            break
-
-      elif char == '"':
-        string = ''
-        while 1:
-          ci += 1
-          offset += 1
-          char = s[ci]
-          if char == '\0':
-            raise Exception("Hit End of Data while reading token")
-
-          if char == '"':
-            break
-
-          if char in ('\r', '\n'):
-            try:
-              raise tokenNewLines("Newline in Token at line {}\n Use allowTokenNewlines(True) to ignore this.".format(line))
-            except ValueError:
-              line += 1
-              offset = 0
-              ci += 1
-              continue
-          if char == '\\':
+      if char == '"':
+        try:
+          string = re_quoted_token.match(s[ci:ci + 1200]).group(1)
+          ci += len(string) + 1
+        except AttributeError:
+          string = ''
+          while 1:
             ci += 1
-            offset += 1
             char = s[ci]
             if char == '\0':
               raise Exception("Hit End of Data while reading token")
 
-          string += char
+            if char == '"':
+              break
+
+            if char in ('\r', '\n'):
+              try:
+                raise tokenNewLines("Newline in Token at line {}\n Use allowTokenNewlines(True) to ignore this.".format(line))
+              except ValueError:
+                line += 1
+                ci += 1
+            if char == '\\':
+              ci += 1
+              char = s[ci]
+              if char == '\0':
+                raise Exception("Hit End of Data while reading token")
+
+            string += char
 
         if grabKey:
           k = string
@@ -126,13 +115,13 @@ class PyVDF:
         grabKey = not grabKey
 
       elif char == '{':
-        if grabKey:
-          raise Exception("Value block without a Key at line {}, column {}".format(line, offset))
-        else:
+        if not grabKey:
           keyApp(k)
           tree[k] = UsageDict()
           tree = tree[k]
           grabKey = True
+        else:
+          raise Exception("Value block without a Key at line {}.\n Last Token: {}".format(line, k))
 
       elif char == '}':
         if grabKey:
@@ -141,34 +130,56 @@ class PyVDF:
           for key in keys:
             tree = tree[key]
         else:
-          Exception("Expected to get a Value, got '}' instead.\n At line {}, column {}, key {}".format(line, offset, k))
+          Exception("Expected to get a Value, got '}}' instead.\n At line {}.\n Last Token: {}".format(line, k))
+
+      elif char == '\n':
+        if s[ci + 1] == '\r':
+          ci += 1
+        line += 1
+
+      elif char == '\r':
+        if s[ci + 1] == '\n':
+          ci += 1
+        line += 1
+
+      elif char == '/' and s[ci + 1] == '/':
+        line += 1
+        ci += 1
+        while 1:
+          ci += 1
+          if s[ci] in ('\n', '\r'):
+            break
 
       elif char == '[':
         while 1:
           ci += 1
-          offset += 1
           if s[ci] == ']':
             break
 
+      elif char == '\0':
+        break
+
       else:
-        string = ''
-        while 1:
-          if char in ('\t', ' ', '\n', '\r', '{', '}', '[', ']', '"'):
-            break
+        try:
+          string = re_unquoted_token.match(s, ci, ci + 1200).group(1)
+          ci += len(string)
+        except AttributeError:
+          string = ''
+          while 1:
+            if char in ('\t', ' ', '\n', '\r', '{', '}', '[', ']', '"'):
+              break
 
-          if char == '\\':
+            if char == '\\':
+              ci += 1
+              char = s[ci]
+              if char == '\0': raise Exception("Hit End of Data while reading token")
+
+            string += char
+
             ci += 1
-            offset += 1
             char = s[ci]
-            if char == '\0': raise Exception("Hit End of Data while reading token")
-
-          string += char
-
-          ci += 1
-          offset += 1
-          char = s[ci]
-          if char == '\0':
-            raise Exception("Hit End of Data while reading token")
+            if char == '\0':
+              raise Exception("Hit End of Data while reading token")
 
         if grabKey:
           k = string
@@ -178,7 +189,6 @@ class PyVDF:
         continue
 
       ci += 1
-      offset += 1
 
     if len(keys) == 0:
       return data
@@ -200,7 +210,7 @@ class PyVDF:
             loop(v, tab + indentation),
             tab)
         else:
-          string += '{}"{}"\n'.format(spacing, v.replace("\"", "\\\""))
+            string += '{}"{}"\n'.format(spacing, v.replace("\"", "\\\"").replace("\\", "\\\\"))
       return string
     return loop(data)
 

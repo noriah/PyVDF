@@ -398,7 +398,7 @@
  "HideSharingNotifications"	"0"
  "system"{
   "EnableGameOverlay"	"1"
-  "InGameOverlayShortcutKey"	"Shift	KEY_TAB"
+  "InGameOverlayShortcutKey"	"Shift  KEY_TAB"
   "InGameOverlayScreenshotNotification"	"1"
   "InGameOverlayScreenshotPlaySound"	"1"
   "InGameOverlayScreenshotSaveUncompressed"	"0"
