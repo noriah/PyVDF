@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
 import cProfile
-from PyVDF import VDFParser
+from PyVDF import PyVDF
 
-VDFParser.useFastDict(True)
-VDFParser.allowTokenNewlines(True)
+PyVDF.useFastDict(True)
+PyVDF.allowTokenNewlines(True)
 pr = cProfile.Profile()
 pr.enable()
 with open("test.vdf") as filec:
-    VDFParser.parse(filec.read())
+    PyVDF.parse(filec.read())
 # pie = VDFParser("test.vdf")
 pr.disable()
 pr.print_stats('cumulative')
