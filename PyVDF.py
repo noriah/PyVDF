@@ -210,7 +210,7 @@ class PyVDF:
             loop(v, tab + indentation),
             tab)
         else:
-            string += '{}"{}"\n'.format(spacing, v.replace("\"", "\\\"").replace("\\", "\\\\"))
+            string += '{}"{}"\n'.format(spacing, v)
       return string
     return loop(data)
 
@@ -237,7 +237,7 @@ class PyVDF:
         filec.close()
     except IOError as e:
       print("Could not open '" + filename + "' for reading.")
-      print(e)
+      print("Ignore this if you are creating a new file.")
 
   def load_string(self, string):
     self.data = PyVDF.parse(string)
@@ -259,7 +259,7 @@ class PyVDF:
     return array
 
   def edit(self, path, value):
-    UsageDict = PyVDF._UseDict()
+    UsageDict = PyVDF._UseDict
     p = [re.sub('[\[\]]', '', w) for w in re.findall(r'[^\.\[\]]+|\[[^\[\]]*\]', path)]
     array = self.data
     a = array
@@ -268,7 +268,7 @@ class PyVDF:
         if not isinstance(a[c], dict):
           a[c] = UsageDict()
       except KeyError:
-        a[c] = ""
+        a[c] = UsageDict()
       a = a[c]
     if value == ";;DELETE;;":
       a.pop(p[-1], None)
