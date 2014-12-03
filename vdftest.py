@@ -14,7 +14,7 @@ pr.enable()
 #     PyVDF.parse(filec.read())
 
 pie = PyVDF()
-pie.load_file("test.vdf")
+pie.load_file("localconfig.vdf")
 # print(h.heap())
 # print(h.heap().more)
 
