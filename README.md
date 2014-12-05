@@ -2,8 +2,8 @@ PyVDF
 ==
 Parse VDFs and Valve KeyValue Files
 
-[![Build Status](https://travis-ci.org/noriah/PyVDF.svg?branch=master)](https://travis-ci.org/noriah/PyVDF)
-[![Coverage Status](https://img.shields.io/coveralls/noriah/PyVDF.svg)](https://coveralls.io/r/noriah/PyVDF)
+[![Build Status](https://img.shields.io/travis/noriah/PyVDF.svg?branch=master&style=flat-square)](https://travis-ci.org/noriah/PyVDF)
+[![Coverage Status](https://img.shields.io/coveralls/noriah/PyVDF.svg?style=flat-square)](https://coveralls.io/r/noriah/PyVDF)
 
 https://developer.valvesoftware.com/wiki/KeyValues
 
