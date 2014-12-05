@@ -13,29 +13,53 @@ import PyVDF
 # Test the files using the faster built-in dict
 # The built-in dict does not preserve insert order
 
-Apple = PyVDF.read('tests/test.vdf')
-if Apple != PyVDF.read('tests/malformed.vdf'):
-  raise Exception('Malformed != Test')
+print("Reading tests/test.vdf")
+Apple = PyVDF.read("tests/test.vdf")
+print("Success")
 
-if Apple != PyVDF.read('tests/one_line.vdf'):
-  raise Exception('One Line != Test')
+print("Reading tests/malformed.vdf")
+if Apple != PyVDF.read("tests/malformed.vdf"):
+  raise Exception("Failure: Malformed != Test")
+else:
+  print("Success: Malformed == Test")
 
-PyVDF.read('tests/nuthin_but_brace.vdf')
-print(Apple)
+print("Reading tests/one_line.vdf")
+if Apple != PyVDF.read("tests/one_line.vdf"):
+  raise Exception("Failure: One Line != Test")
+else:
+  print("Success: One Line == Test")
+
+print("Reading tests/nuthin_but_brace.vdf")
+PyVDF.read("tests/nuthin_but_brace.vdf")
+print("Success")
 
 # Test the files using the slower OrderedDict
 # OrderedDict preserves the insert order
 
+
+print("Setting useFastDict to False")
 PyVDF.useFastDict(False)
+print("Success")
 
-Apple = PyVDF.read('tests/test.vdf')
-if Apple != PyVDF.read('tests/malformed.vdf'):
-  raise Exception('Malformed OD != Test OD')
+print("Reading tests/test.vdf")
+Apple = PyVDF.read("tests/test.vdf")
+print("Success")
 
-if Apple != PyVDF.read('tests/one_line.vdf'):
-  raise Exception('One Line OD != Test OD')
+print("Reading tests/malformed.vdf")
+if Apple != PyVDF.read("tests/malformed.vdf"):
+  raise Exception("Failure: Malformed OD != Test OD")
+else:
+  print("Success: Malformed OD == Test OD")
 
-PyVDF.read('tests/nuthin_but_brace.vdf')
+print("Reading tests/one_line.vdf")
+if Apple != PyVDF.read("tests/one_line.vdf"):
+  raise Exception("Failure: One Line OD != Test OD")
+else:
+  print("Success: One Line OD == Test OD")
+
+print("Reading tests/nuthin_but_brace.vdf")
+PyVDF.read("tests/nuthin_but_brace.vdf")
+print("Success")
 
 # pr.disable()
-# pr.print_stats('cumulative')
+# pr.print_stats("cumulative")
