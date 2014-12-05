@@ -67,6 +67,21 @@ try:
 except Exception:
   print("Pass - breakit2")
 
+try:
+  PyVDF(infile='tests/breakit3.vdf')
+except Exception:
+  print("Pass - breakit3")
+
+try:
+  Error = PyVDF()
+  Error['Nope.Nope'] = None
+  Error.setData(list())
+except Exception:
+  print("Pass - Bad Data")
+
+Food.load('tests/test.vdf')
+Food.load('"Apples"{"NoApplesHere" "Nope"}')
+
 
 Empty.write_file('menu.cfg')
 

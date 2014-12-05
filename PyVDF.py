@@ -25,12 +25,7 @@ __all__ = ['PyVDF']
 import re
 import sys
 import types
-from collections import deque
-
-try:
-  from collections import OrderedDict as odict
-except ImportError:
-  odict = dict
+from collections import OrderedDict, deque
 
 #############
 # PyVDF #
@@ -155,7 +150,7 @@ class PyVDF:
 
   @staticmethod
   def useFastDict(var = True):
-    PyVDF.__UseDict = dict if var else odict
+    PyVDF.__UseDict = dict if var else OrderedDict
 
   @staticmethod
   def setIndentation(var = "\t"):
@@ -364,7 +359,7 @@ class PyVDF:
       except KeyError:
         a[c] = _dict()
       a = a[c]
-    if value == ";;DELETE;;":
+    if value == None:
       a.pop(p[-1], None)
     else:
       a[p[-1]] = value
