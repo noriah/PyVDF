@@ -48,7 +48,7 @@ class PyVDF:
     ...     "Cobbler"        "Great"
     ... }'''
 
-    >>> import PyVDF
+    >>> from PyVDF import PyVDF
     >>> apple = PyVDF(food)
     >>> apple.find('Apple.Pie')
     'Good'
@@ -142,9 +142,9 @@ class PyVDF:
 
   def __init__(self, data=None, infile=None):
     if data != None:
-      self.__data = PyVDF.reads(data)
+      self.__data = self.reads(data)
     elif infile != None:
-      self.__data = PyVDF.read(infile)
+      self.__data = self.read(infile)
     return
 
   def __getitem__(self, key):
@@ -178,11 +178,14 @@ class PyVDF:
     try:
       return PyVDF.reads(f.read())
     except AttributeError:
-      with open(f) as filec:
+      pass
+      
+    try:
+      with open(f, 'r') as filec:
         data = PyVDF.reads(filec.read())
         filec.close()
         return data
-    except IOError:
+    except IOError as e:
       print("Could not open '" + f + "' for reading.")
       print("Ignore this if you are creating a new file.")
 
@@ -385,29 +388,3 @@ class PyVDF:
 
 
   # def fromJson(self):
-
-
-# Make PyVDF module callable.
-class _Black_Magic(types.ModuleType):
-  def __init__(self):
-    super(_Black_Magic, self).__init__('PyVDF')
-    self._realmod = sys.modules['PyVDF']
-    sys.modules['PyVDF'] = self
-    self.__doc__ = PyVDF.__doc__
-    self.useFastDict = PyVDF.useFastDict
-    self.setIndentation = PyVDF.setIndentation
-    self.setSpacing = PyVDF.setSpacing
-    self.setCondensed = PyVDF.setCondensed
-    self.setMaxTokenLength = PyVDF.setMaxTokenLength
-    self.read = PyVDF.read
-    self.reads = PyVDF.reads
-    self.formatData = PyVDF.formatData
-    self.writeData = PyVDF.writeData
-  def __dir__(self):
-    return dir(self._realmod)
-  def __call__(self, *args, **kw):
-    return self._realmod.PyVDF(*args, **kw)
-  def __getattr__(self, attr):
-    return getattr(self._realmod, attr)
-
-_Black_Magic()

@@ -13,7 +13,7 @@ import it and call it to create an instance, or just call the static methods off
 
 ### Basic Usage
 ```python
-import PyVDF
+from PyVDF import PyVDF
 Foo = PyVDF()
 Foo = PyVDF(data=StringOData)
 Foo = PyVDF(infile="/path/to/file.ext")
@@ -132,7 +132,7 @@ Bar = Foo.toString()
 ### Static Calls
 
 ```python
-import PyVDF
+from PyVDF import PyVDF
 FooBar = PyVDF.read("/path/to/file.ext")
 FooBar = PyVDF.read(fileInstance)
 FooBar = PyVDF.reads(StringOData)

@@ -4,7 +4,7 @@
 
 # If no exceptions are given, It passed.
 
-import PyVDF
+from PyVDF import PyVDF
 
 # import cProfile
 # pr = cProfile.Profile()
@@ -30,6 +30,7 @@ print("Reading tests/nuthin_but_brace.vdf")
 PyVDF.read("tests/nuthin_but_brace.vdf")
 print("Success")
 
+Food = PyVDF(infile='apples')
 Food = PyVDF(infile='tests/food.vdf')
 Empty = PyVDF()
 
@@ -47,6 +48,25 @@ Empty.editMany([
 PyVDF.setIndentation(" ")
 PyVDF.setCondensed(True)
 PyVDF.setSpacing(" ")
+PyVDF.setMaxTokenLength(3)
+
+try:
+  null = PyVDF(Food.toString())
+except Exception:
+  print("Pass - maxLength3")
+
+PyVDF.setMaxTokenLength(1200)
+
+try:
+  PyVDF(infile='tests/breakit.vdf')
+except Exception:
+  print("Pass - breakit")
+
+try:
+  PyVDF(infile='tests/breakit2.vdf')
+except Exception:
+  print("Pass - breakit2")
+
 
 Empty.write_file('menu.cfg')
 
