@@ -1,22 +1,18 @@
 #!/usr/bin/python
 
-import cProfile
-# from guppy import hpy
-# h = hpy()
-# h.setrelheap()
+with open("test.vdf") as filec:
+  data = filec.read()
+
+
 from PyVDF import PyVDF
 
-PyVDF.useFastDict(True)
-PyVDF.allowTokenNewlines(True)
-pr = cProfile.Profile()
-pr.enable()
-# with open("localconfig.vdf") as filec:
-#     PyVDF.parse(filec.read())
+if __debug__:
+  import cProfile
+  pr = cProfile.Profile()
+  pr.enable()
 
-pie = PyVDF()
-pie.load_file("localconfig.vdf")
-# print(h.heap())
-# print(h.heap().more)
+PyVDF.parse(data)
 
-pr.disable()
-pr.print_stats('cumulative')
+if __debug__:
+  pr.disable()
+  pr.print_stats('cumulative')

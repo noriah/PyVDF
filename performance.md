@@ -1,4 +1,26 @@
-### New Version
+Tests run on i7-2670QM 2.2GHz, 8GB DDR3
+
+### Current Version
+```Bash
+$ python -d vdftest.py
+         4415 function calls in 0.004 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.003    0.003    0.004    0.004 PyVDF.py:73(parse)
+     1176    0.001    0.000    0.001    0.000 {method 'match' of '_sre.SRE_Pattern' objects}
+     1176    0.000    0.000    0.000    0.000 {method 'group' of '_sre.SRE_Match' objects}
+     1177    0.000    0.000    0.000    0.000 {len}
+      442    0.000    0.000    0.000    0.000 {method 'pop' of 'collections.deque' objects}
+      442    0.000    0.000    0.000    0.000 {method 'append' of 'collections.deque' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+```
+
+
+#### Old Versions
+
+Less Overhead: e0610e0a77d09c9fb4f6ba4ee42dd7fee7dfd22b
 ```Bash
 $ time python vdftest.py 
          889 function calls in 0.006 seconds
@@ -21,8 +43,7 @@ user    0m0.033s
 sys 0m0.008s
 ```
 
-
-### Old Version
+Updated. Providing test material: 5ea8aae344f739db7461066ea7e3aa0f3e30202a
 ```Bash
 $ time python vdftest.py 
          1625 function calls (1183 primitive calls) in 0.007 seconds

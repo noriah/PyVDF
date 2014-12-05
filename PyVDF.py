@@ -9,7 +9,7 @@ __all__ = ['PyVDF']
 #####################################
 
 import re
-from collections import OrderedDict
+from collections import OrderedDict, deque
 
 #############
 # PyVDF #
@@ -17,18 +17,25 @@ from collections import OrderedDict
 class PyVDF:
 
   _UseDict = dict
-  _AllowNewlines = False
+  # _AllowNewlines = False
   _OutputIndentation = "\t"
   _OutputSpacing = "\t\t"
   _CondensedOutput = False
   _MaxTokenLength = 1200
 
-  __ErrorReadLongToken__ = "Holy Long Strings Batman!\n There is a token largers than {} characters on line {}"
-  __ErrorReadTokenNewline__ = "Newline in Token at line {}\n Use allowTokenNewlines(True) to ignore this."
-  __ErrorReadBlockNoKey__ = "Value block without a Key at line {}.\n Last Token: {}"
-  __ErrorReadCompanionBrace_ = "Expected to get a Value, got '}}' instead.\n At line {}. Last Token: {}"
-  __ErrorReadEOFToken__ = "Hit End of Data while reading token"
-  __ErrorReadEOFArray__ = "Missing braces"
+  # _ERROR_READ_LongToken = "Holy Long Strings Batman!\n There's a token largers than {} characters on line {}"
+  _ERROR_READ_BadToken = "Bad token on line {}.\n Possible Newline or Token greater than {} character in length"
+  # _ERROR_READ_TokenNewline = "Newline in Token at line {}\n Use allowTokenNewlines(True) to ignore this."
+  _ERROR_READ_BlockNoKey = "Value block without a Key at line {}.\n Last Token: {}"
+  _ERROR_READ_CompanionBrace = "Expected to get a Value, got '}}' instead.\n At line {}. Last Token: {}"
+  _ERROR_READ_EODToken = "Hit End of Data while reading token"
+  _ERROR_READ_EODArray = "Missing braces"
+
+  _ERROR_WRITE_NotDict = "Data is not of type dict\n {}"
+
+  _RE_Token_Quoted = re.compile(r'(?:\\.|[^"])*"')
+  _RE_Token_UnQuoted = re.compile(r'^(?:\\.|[^\\"\s\{\}\[\]])*')
+  _RE_Path_Seperator = re.compile(r'[^\.\[\]]+|\[[^\[\]]*\]')
 
   def __init__(self):
     self.data = PyVDF._UseDict()
@@ -43,9 +50,9 @@ class PyVDF:
   def useFastDict(var = True):
     PyVDF._UseDict = dict if var else OrderedDict
 
-  @staticmethod
-  def allowTokenNewlines(var = False):
-    PyVDF._AllowNewlines = var
+  # @staticmethod
+  # def allowTokenNewlines(var = False):
+  #   PyVDF._AllowNewlines = var
 
   @staticmethod
   def setIndention(var = "\t"):
@@ -65,77 +72,64 @@ class PyVDF:
 
   @staticmethod
   def parse(s):
+    
+    _dict = PyVDF._UseDict
+    _len = len
+    _whitespace = frozenset('\t ')
+    _newline = frozenset('\n\r')
+    # tokenNewLines = ValueError if PyVDF._AllowNewlines else Exception
+    
+    _quote_match = PyVDF._RE_Token_Quoted.match
+    _unquote_match = PyVDF._RE_Token_UnQuoted.match
+    _max_length = PyVDF._MaxTokenLength
+    
     ci = 0
     line = 0
-    grabKey = True
-    UsageDict = PyVDF._UseDict
-    tokenNewLines = ValueError if PyVDF._AllowNewlines else Exception
-    data = UsageDict()
-    keys = list()
+    grabKey = 1
+    
+    data = _dict()
+    tree = data
+    
+    keys = deque()
     keyApp = keys.append
     keyPop = keys.pop
-    tree = data
-    maxTokenLength = PyVDF._MaxTokenLength
-
-    if PyVDF._AllowNewlines:
-      re_quoted_token = re.compile(r'"(?:\\.|[^"])*"', re.M)
-    else:
-      re_quoted_token = re.compile(r'"(?:\\.|[^"])*"')
-
-    re_unquoted_token = re.compile(r'^(?:\\.|[^\\"\s\{\}\[\]])*')
-
+    
     try:
       while 1:
+        
+        while s[ci] in _whitespace:
+          ci += 1
+        
         char = s[ci]
 
-        while char in ('\t', ' '):
-          ci += 1
-          char = s[ci]
-
         if char == '"':
-          try:
-            string = re_quoted_token.match(s[ci:ci + maxTokenLength]).group()[1:-1]
-            ci += len(string) + 1
-          except AttributeError:
-            # string = ''
-            # while 1:
-            #   ci += 1
-            #   char = s[ci]
-            #   if char == '\0':
-            #     raise Exception(PyVDF.__ErrorReadEOFToken__)
-
-            #   if char == '"':
-            #     break
-
-            #   if char in ('\r', '\n'):
-            #     try:
-            #       raise tokenNewLines(PyVDF.__ErrorReadTokenNewline__.format(line))
-            #     except ValueError:
-            #       line += 1
-            #       ci += 1
-            #   if char == '\\':
-            #     ci += 1
-            #     char = s[ci]
-            #     if char == '\0':
-            #       raise Exception(PyVDF.__ErrorReadEOFToken__)
-
-            #   string += char
-            raise Exception(PyVDF.__ErrorReadLongToken__.format(maxTokenLength, line))
+          ci += 1
+          string = _quote_match(s[ci:ci + _max_length]).group()[:-1]
+          ci += _len(string)
 
           if grabKey:
             k = string
+            grabKey = 0
           else:
             tree[k] = string
-          grabKey = not grabKey
+            grabKey = 1
 
+        elif char == '\n':
+          line += 1
+
+        elif char == '\r':
+          if s[ci + 1] == '\n':
+            ci += 1
+          line += 1
+          
         elif char == '{':
-          if not grabKey:
-            keyApp(k)
-            tree[k] = UsageDict()
-            tree = tree[k]
-            grabKey = True
+          if grabKey:
+            raise Exception(PyVDF._ERROR_READ_BlockNoKey.format(line, k))
           else:
-            raise Exception(__ErrorReadBlockNoKey__.format(line, k))
+            keyApp(k)
+            tree[k] = _dict()
+            tree = tree[k]
+            grabKey = 1
 
         elif char == '}':
           if grabKey:
@@ -144,24 +138,14 @@ class PyVDF:
             for key in keys:
               tree = tree[key]
           else:
-            Exception(PyVDF.__ErrorReadCompanionBrace_.format(line, k))
-
-        elif char == '\n':
-          if s[ci + 1] == '\r':
-            ci += 1
-          line += 1
-
-        elif char == '\r':
-          if s[ci + 1] == '\n':
-            ci += 1
-          line += 1
+            raise Exception(PyVDF._ERROR_READ_CompanionBrace.format(line, k))
 
         elif char == '/' and s[ci + 1] == '/':
-          line += 1
           ci += 1
+          line += 1
           while 1:
             ci += 1
-            if s[ci] in ('\n', '\r'):
+            if s[ci] in _newline:
               break
 
         elif char == '[':
@@ -171,41 +155,26 @@ class PyVDF:
               break
 
         else:
-          try:
-            string = re_unquoted_token.match(s[ci:ci + maxTokenLength]).group()
-            ci += len(string)
-          except AttributeError:
-            # string = ''
-            # while 1:
-            #   if char in ('\t', ' ', '\n', '\r', '{', '}', '[', ']', '"'):
-            #     break
-
-            #   if char == '\\':
-            #     ci += 1
-            #     char = s[ci]
-            #     if char == '\0': raise Exception(PyVDF.__ErrorReadEOFToken__)
-
-            #   string += char
-
-            #   ci += 1
-            #   char = s[ci]
-            #   if char == '\0':
-            #     raise Exception()
-            raise Exception(PyVDF.__ErrorReadLongToken__.format(maxTokenLength, line))
-
+          string = _unquote_match(s[ci:ci + _max_length]).group()
+          ci += _len(string)
+            
           if grabKey:
             k = string
+            grabKey = 0
           else:
             tree[k] = string
-          grabKey = not grabKey
+            grabKey = 1
           continue
 
         ci += 1
 
     except IndexError:
-      if len(keys) == 0:
+      if _len(keys) == 0:
         return data
-      raise Exception(PyVDF.__ErrorReadEOFArray__)
+      raise Exception(PyVDF._ERROR_READ_EODArray)
+    except AttributeError:
+      raise Exception(PyVDF._ERROR_READ_BadToken.format(line, _max_length))
+
 
   @staticmethod
   def formatData(data):
@@ -229,10 +198,7 @@ class PyVDF:
   @staticmethod
   def writeData(filename, data):
     if not isinstance(data, dict):
-      if isinstance(data, list):
-        raise Exception("Cannot write out List Data\n {}".format(repr(data)))
-      else:
-        raise Exception("Data to write is not a Dictionary\n {}".format(repr(data)))
+      raise Exception(PyVDF._ERROR_WRITE_NotDict.format(repr(data)))
     try:
       filec = open(filename, 'w')
       data = PyVDF.formatData(data)
@@ -261,7 +227,7 @@ class PyVDF:
     self.data = data
 
   def find(self, path):
-    p = [re.sub('[\[\]]', '', w) for w in re.findall(r'[^\.\[\]]+|\[[^\[\]]*\]', path)]
+    p = [re.sub('[\[\]]', '', w) for w in PyVDF._RE_Path_Seperator.findall(path)]
     array = self.data
     for c in p:
       try:
@@ -271,16 +237,16 @@ class PyVDF:
     return array
 
   def edit(self, path, value):
-    UsageDict = PyVDF._UseDict
-    p = [re.sub('[\[\]]', '', w) for w in re.findall(r'[^\.\[\]]+|\[[^\[\]]*\]', path)]
+    _dict = PyVDF._UseDict
+    p = [re.sub('[\[\]]', '', w) for w in PyVDF._RE_Path_Seperator.finall(path)]
     array = self.data
     a = array
     for c in p[:-1]:
       try:
         if not isinstance(a[c], dict):
-          a[c] = UsageDict()
+          a[c] = _dict()
       except KeyError:
-        a[c] = UsageDict()
+        a[c] = _dict()
       a = a[c]
     if value == ";;DELETE;;":
       a.pop(p[-1], None)
@@ -292,7 +258,7 @@ class PyVDF:
     return map(self.find, paths)
 
   def editMany(self, paths):
-    map((lambda (p, v): self.edit(p, v)), paths)
+    map((lambda p, v: self.edit(p, v)), paths)
 
   def write_file(self, filename):
     self.writeData(filename, self.data)
