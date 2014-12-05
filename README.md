@@ -1,98 +1,155 @@
 PyVDF
 ==
+Parse VDFs and Valve KeyValue Files
 
-A set of Python Classes to read and write VDFs (Valve Data Files).
+https://developer.valvesoftware.com/wiki/KeyValues
 
-###What is a VDF?
-https://developer.valvesoftware.com/wiki/KeyValues#File_Format
+## API
+All functionality is provided through the PyVDF module.
+import it and call it to create an instance, or just call the static methods off the import.
 
-* [VDFParser] [1]
-* [VDFWriter] [2]
-* [Key Paths] [3] 
-  * [Get Paths] [4]
-  * [Set Paths] [5]
-* [Programs/Projects using PyVDF] [6]
-
-
-How do I use these Wonderful Classes?
---
-Simple
-
-###VDFParser
-Does what the name says, it reads a vdf and returns a useable array.
-
-####Usage
-First, import the Class. Then Give it the filename of the file to read
-```Python
-from PyVDF import VDFParser
-vdf = VDFParser('string')
+### Basic Usage
+```python
+import PyVDF
+Foo = PyVDF()
+Foo = PyVDF(data=StringOData)
+Foo = PyVDF(infile="/path/to/file.ext")
+Foo = PyVDF(infile=fileInstance)
 ```
-You will get a warning if something went wrong, but its pretty good at fixing its own mistakes. Now to find a value from a [path] [3] (see below), just use the `find(string)` or `findMany([list])` functions:
-```Python
-value = vdf.find('Foo.Bar')
-values = vdf.findMany(['Foo.Bar', 'Foo.Bar.FooBar'])
+
+#### PyVDF(data=None, infile=None)
+
+Constructor that can take either a string of vdf data, or a filename or file instance
+```python
+Foo = PyVDF(data='"Apples"{"NoApplesHere" "Nope"}')
+
+Foo = PyVDF(infile='tests/test.vdf')
+
+Foo = PyVDF(infile=open('tests/test.vdf', 'r'))
 ```
-To get an array of all the keys and values, call the `getData()` function:
-```Python
-array = vdf.getData()
+
+
+##### load(file/str f)
+A method to load the contents of f
+```python
+Foo = PyVDF()
+Foo.load('tests/test.vdf')
+Foo.load(open('tests/test.vdf', 'r'))
 ```
-To read a different file without declaring a new VDFParser, the `setFile('string')` function will change to that file and automatically read it, now when you call `find()`, `findMany()`, or `getData()`, fyou will get the data from the new file
 
-###VDFWriter
-A bit trickier than VDFParser, and not as straight forward
+##### loads(str data)
+String version of .load
 
-####Usage
-First, import the Class. Then give the filename of a file and add in some optional data
-```Python
-from PyVDF import VDFWriter
-writer = VDFWriter('filename', data)
+A method to load the contents of a string
+```python
+Foo = PyVDF()
+Foo.loads('"Apples"{"AreApplesHere" "No Apples Here"}')
 ```
-The Data must be a Dictionary (Dict) or an OrderedDictionary (OrderedDict). I use OrderedDictionaries, because I like my data to come out in the same order I put it in.
 
-Now that we have created the writer, lets set some values. Value string must be structured like this: `Path.To.Key=Value` Once you have your key-value pair, or 'set string', you can either pass that into the `edit(string)` function or pass a list of set strings into the `editMany([list])` function. Neither will return any value. Also, if the Path to the key is not found, it will be created.
-```Python
-writer.edit('Foo.Bar=FooBar')
-writer.editMany(['Foo.Foo=Bar', 'Foo.Bar.FooBar=FooBar'])
+##### getData()
+Return a dict or OrderedDict containing the objects data
+```python
+Foo = PyVDF(infile='tests/test.vdf')
+FooBar = Foo.getData()
 ```
-Once you have made some edits, you can write the data out to a file with `write()`. You must call this whenever you want to save. This is so there isn't any excesive file I/O.
 
-To undo what you have edited, call the `undo()` function. THIS WILL UNDO ALL EDITS SINCE LAST WRITE. Finally, to change the file being written to, call the `setFile('string')` function.
-
-###Key Paths
-Keypaths are what I call the array structure to a value.
-Say you have a file like this:
-```Python
-"Foo"
-{
-  "Fuu"   "Bar"
-  "Bar"
-  {
-    "FooBar"    "FooBar"
-  }
-}
+##### setData(dict data)
+Set the objects data to the given dict or OrderedDict
+```python
+Foo = PyVDF()
+Foo.setData({'Apples': {'AreApplesHere': 'No Apples Here'}})
 ```
-#####Get Paths
-To get the Value `Bar`, you need to find the key `Fuu`
-The Path to Fuu is `Foo.Fuu`
 
-This is a Get Path, because you use it with the `VDFParser.find()` and `VDFParser.findMany()` functions
+##### find(str path)
+Find a value from a path.
+ex. Apples.AreApplesHere
 
-#####Set Paths
-To set the value at Key `FooBar` to `Bar`, we have to get its path and then tell it to set the value to Bar.
+If a path contains a key that has periods in the name, Surround that part of the path in brackets.
 
-`Foo.Bar.FooBar=Bar`
+ex. ```UserLocalConfigStore.depots.17522.CDN.[content8.steampowered.com]```
 
-The the Path part is 'Foo.Bar.FooBar' and the Value is 'Bar'. 
+The content8.steampowered.com part contains periods, and therefor must be surrounded in brackets.
 
+If the path contains spaces, do not put it in quotes. That will look like literal quotes to python.
 
-Programs/Projects using PyVDF
---
-* vdfedit - https://github.com/noriah/vdfedit
+A non existant path will return an empty string
 
+```python
+Foo.find('Apples.AreApplesHere')
+# No Apples Here
+```
+You can also use array notation get values
+```python
+Bar = Foo['Apples.AreApplesHere']
+```
 
-[1]: #vdfparser "VDFParser"
-[2]: #vdfwriter "VDFWriter"
-[3]: #key-paths "Key Paths"
-[4]: #get-paths "Get Key Paths"
-[5]: #set-paths "Set Key Paths"
-[6]: #programsprojects-using-pyvdf "What uses PyVDF?"
+##### edit(str path, str value)
+Like find, but the second argument is the value to set for that key-path
+
+```python
+Foo.edit('Apples.AreApplesHere', 'YES!!!')
+```
+You can also create new paths.
+```python
+Foo.edit('Non.Existant.Path', 'FooBar')
+```
+
+You can also use array notation to set values
+```python
+Foo['Path.To.Key'] = 'Value'
+```
+
+##### findMany(iterable paths)
+like find, but will return a list of found or not found values.
+
+Paths must be a list or a tuple of path strings.
+```python
+Foo.findMany(['Apples.AreApplesHere', 'Non.Existant.Path'])
+# ['YES!!!', 'FooBar']
+```
+
+##### editMany(iteral paths)
+like edit and findMany, however the paths must be a list or tuple of lists or tuples.
+```python
+Foo.editMany([('Apples.AreApplesHere', 'No'), ['Path', 'Yes']])
+```
+
+##### write_file(str filename)
+Write the objects data to a file
+```python
+Foo.write_file('out.vdf')
+```
+
+##### toString()
+Retrun the objects data as a VDF string
+```python
+Bar = Foo.toString()
+```
+
+### Static Calls
+
+```python
+import PyVDF
+FooBar = PyVDF.read("/path/to/file.ext")
+FooBar = PyVDF.read(fileInstance)
+FooBar = PyVDF.reads(StringOData)
+```
+
+##### useFastDict(bool var)
+
+##### setIndentation(str var)
+
+##### setSpacing(str var)
+
+##### setCondensed(bool var)
+
+##### setMaxTokenLength(int var)
+
+##### read(file/filename f)
+
+##### reads(str data)
+
+##### formatData(dict data)
+
+##### writeData(file/filename f, dict data)
+

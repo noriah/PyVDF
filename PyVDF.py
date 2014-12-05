@@ -1,44 +1,146 @@
+'''
+Copyright (c) 2014 noriah vix@noriah.dev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software isfurnished
+to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+'''
+
 __all__ = ['PyVDF']
-#####################################
-# PyVDF.py                          #
-# Author: noriah            #
-# For Reading and Writing           #
-#    VDF Files                      #
-#   (Valve Data File)               #
-# Copyright (c) 2014 noriah #
-#####################################
 
 import re
+import sys
+import types
 from collections import OrderedDict, deque
 
 #############
 # PyVDF #
 #############
 class PyVDF:
+  """Parse VDFs and Valve KeyValue Files
 
-  _UseDict = dict
-  # _AllowNewlines = False
-  _OutputIndentation = "\t"
-  _OutputSpacing = "\t\t"
-  _CondensedOutput = False
-  _MaxTokenLength = 1200
+  https://developer.valvesoftware.com/wiki/KeyValues
 
-  # _ERROR_READ_LongToken = "Holy Long Strings Batman!\n There's a token largers than {} characters on line {}"
-  _ERROR_READ_BadToken = "Bad token on line {}.\n Possible Newline or Token greater than {} character in length"
-  # _ERROR_READ_TokenNewline = "Newline in Token at line {}\n Use allowTokenNewlines(True) to ignore this."
-  _ERROR_READ_BlockNoKey = "Value block without a Key at line {}.\n Last Token: {}"
-  _ERROR_READ_CompanionBrace = "Expected to get a Value, got '}}' instead.\n At line {}. Last Token: {}"
-  _ERROR_READ_EODToken = "Hit End of Data while reading token"
-  _ERROR_READ_EODArray = "Missing braces"
 
-  _ERROR_WRITE_NotDict = "Data is not of type dict\n {}"
+    >>> food = '''
+    ... "Apple"
+    ... {
+    ...     "Pie"   "Good"
+    ...     "Cobbler"        "Great"
+    ... }'''
 
-  _RE_Token_Quoted = re.compile(r'(?:\\.|[^"])*"')
-  _RE_Token_UnQuoted = re.compile(r'^(?:\\.|[^\\"\s\{\}\[\]])*')
-  _RE_Path_Seperator = re.compile(r'[^\.\[\]]+|\[[^\[\]]*\]')
+    >>> import PyVDF
+    >>> apple = PyVDF(food)
+    >>> apple.find('Apple.Pie')
+    'Good'
+    
+    >>> apple.findMany(['Apple.Pie','Apple.Cobbler'])
+    ['Good','Great']
 
-  def __init__(self):
-    self.data = PyVDF._UseDict()
+
+  Load a file
+
+    >>> apple.load(file instance/filename)
+
+  Load a string
+
+    >>> apple.loads(data)
+
+  As a Static Method
+
+    >>> apple = PyVDF.read(food)
+    >>> apple['Apple']['Pie']
+    'Good'
+
+  Use OrderedDict instead of dict
+
+    >>> PyVDF.useFastDict(False)
+
+  Output Data as a String
+
+    * Using Class Method on PyVDF instance
+    apple.toString()
+    '"Apple"\n{\n\t"Cobbler"\t\t"Great"\n\t"Pie"\t\t"Good"\n}\n'
+
+    * Using Static Method on Dictionary
+    >>> PyVDF.formatData(apple)
+    '"Apple"\n{\n\t"Cobbler"\t\t"Great"\n\t"Pie"\t\t"Good"\n}\n'
+
+  Set Condensed Output (Curly Braces on same line as Key)
+    
+    >>> PyVDF.setCondensed(True)
+    >>> PyVDF.formatData(apple)
+    '"Apple"{\n\t"Cobbler"\t\t"Great"\n\t"Pie"\t\t"Good"\n}\n'
+
+  Set Output Spacing and/or Indentation
+
+    >>> PyVDF.setIndention('\t\t\t')
+    >>> PyVDF.setSpacing('What a Terrible Spacer')
+
+    >>> PyVDF.formatData(apple)
+    '"Apple"\n{\n\t\t\t"Cobbler"What a Terrible Spacer"Great"\n\t\t\t"Pie"What a Terrible Spacer"Good"\n}\n'
+
+  Set Maximum Token length (Outline from valve says Max of 1024,
+  but they broke their own rule) Default is 1200
+
+    >>> PyVDF.setMaxTokenLength(2000)
+
+  Write a file
+
+    * Static Method
+    >>> PyVDF.writeData(file instance/filename, apple)
+
+    * PyVDF Instance
+    >>> apple.write_file(file instance/filename)
+
+  Get Data from Instance
+
+    >>> apple.getData()
+
+  Set Instance data
+
+    >>> apple.setData(apple_new)
+
+  """
+
+  __UseDict = dict
+  __OutputIndentation = "\t"
+  __OutputSpacing = "\t\t"
+  __CondensedOutput = False
+  __MaxTokenLength = 1200
+
+  __ERR_BadToken = "Bad token on line {}.\n Possible Newline or Token greater than {} character in length"
+  __ERR_BlockNoKey = "Value block without a Key at line {}.\n Last Token: {}"
+  __ERR_CompanionBrace = "Expected to get a Value, got '}}' instead.\n At line {}. Last Token: {}"
+  __ERR_EODToken = "Hit End of Data while reading token"
+  __ERR_EODArray = "Missing braces"
+
+  __ERR_NotDict = "Data is not of type dict\n {}"
+
+  __RE_Token_Quoted = re.compile(r'(?:\\.|[^"])*"')
+  __RE_Token_UnQuoted = re.compile(r'^(?:\\.|[^\\"\s\{\}\[\]])*')
+  __RE_Path_Seperator = re.compile(r'[^\.\[\]]+|\[[^\[\]]*\]')
+
+  def __init__(self, data=None, infile=None):
+    if data != None:
+      self.__data = PyVDF.reads(data)
+    elif infile != None:
+      self.__data = PyVDF.read(infile)
+    return
 
   def __getitem__(self, key):
     return self.find(key)
@@ -48,40 +150,47 @@ class PyVDF:
 
   @staticmethod
   def useFastDict(var = True):
-    PyVDF._UseDict = dict if var else OrderedDict
-
-  # @staticmethod
-  # def allowTokenNewlines(var = False):
-  #   PyVDF._AllowNewlines = var
+    PyVDF.__UseDict = dict if var else OrderedDict
 
   @staticmethod
   def setIndention(var = "\t"):
-    PyVDF._OutputIndentation = var
+    PyVDF.__OutputIndentation = var
 
   @staticmethod
   def setSpacing(var = "\t\t"):
-    PyVDF._OutputSpacing = var
+    PyVDF.__OutputSpacing = var
 
   @staticmethod
   def setCondensed(var = False):
-    PyVDF._CondensedOutput = var
+    PyVDF.__CondensedOutput = var
 
   @staticmethod
   def setMaxTokenLength(var = 1024):
-    PyVDF._MaxTokenLength = var
+    PyVDF.__MaxTokenLength = var
 
   @staticmethod
-  def parse(s):
-    
-    _dict = PyVDF._UseDict
+  def read(f):
+    try:
+      return PyVDF.reads(f.read())
+    except AttributeError:
+      with open(f) as filec:
+        data = PyVDF.reads(filec.read())
+        filec.close()
+        return data
+    except IOError:
+      print("Could not open '" + f + "' for reading.")
+      print("Ignore this if you are creating a new file.")
+
+  @staticmethod
+  def reads(s):
+    _dict = PyVDF.__UseDict
     _len = len
     _whitespace = frozenset('\t ')
     _newline = frozenset('\n\r')
-    # tokenNewLines = ValueError if PyVDF._AllowNewlines else Exception
     
-    _quote_match = PyVDF._RE_Token_Quoted.match
-    _unquote_match = PyVDF._RE_Token_UnQuoted.match
-    _max_length = PyVDF._MaxTokenLength
+    _quote_match = PyVDF.__RE_Token_Quoted.match
+    _unquote_match = PyVDF.__RE_Token_UnQuoted.match
+    _max_length = PyVDF.__MaxTokenLength
     
     ci = 0
     line = 0
@@ -124,7 +233,7 @@ class PyVDF:
           
         elif char == '{':
           if grabKey:
-            raise Exception(PyVDF._ERROR_READ_BlockNoKey.format(line, k))
+            raise Exception(PyVDF.__ERR_BlockNoKey.format(line, k))
           else:
             keyApp(k)
             tree[k] = _dict()
@@ -138,7 +247,7 @@ class PyVDF:
             for key in keys:
               tree = tree[key]
           else:
-            raise Exception(PyVDF._ERROR_READ_CompanionBrace.format(line, k))
+            raise Exception(PyVDF.__ERR_CompanionBrace.format(line, k))
 
         elif char == '/' and s[ci + 1] == '/':
           ci += 1
@@ -171,16 +280,16 @@ class PyVDF:
     except IndexError:
       if _len(keys) == 0:
         return data
-      raise Exception(PyVDF._ERROR_READ_EODArray)
+      raise Exception(PyVDF.__ERR_EODArray)
     except AttributeError:
-      raise Exception(PyVDF._ERROR_READ_BadToken.format(line, _max_length))
+      raise Exception(PyVDF.__ERR_BadToken.format(line, _max_length))
 
 
   @staticmethod
   def formatData(data):
-    condensed = PyVDF._CondensedOutput
-    indentation = PyVDF._OutputIndentation
-    spacing = PyVDF._OutputSpacing
+    condensed = PyVDF.__CondensedOutput
+    indentation = PyVDF.__OutputIndentation
+    spacing = PyVDF.__OutputSpacing
     def loop(array, tab=''):
       string = ''
       for k, v in array.iteritems():
@@ -196,39 +305,38 @@ class PyVDF:
     return loop(data)
 
   @staticmethod
-  def writeData(filename, data):
+  def writeData(f, data):
     if not isinstance(data, dict):
-      raise Exception(PyVDF._ERROR_WRITE_NotDict.format(repr(data)))
+      raise Exception(PyVDF.__ERR_NotDict.format(repr(data)))
+    data = PyVDF.formatData(data)
     try:
-      filec = open(filename, 'w')
-      data = PyVDF.formatData(data)
+      f.write(data)
+    except AttributeError:
+      filec = open(f, 'w')
       filec.write(data)
       filec.close()
     except IOError as e:
       print("Could not open '" + filename + "' for writing.")
       print(e)
     
-  def load_file(self, filename):
-    try:
-      with open(filename) as filec:
-        self.data = PyVDF.parse(filec.read())
-        filec.close()
-    except IOError as e:
-      print("Could not open '" + filename + "' for reading.")
-      print("Ignore this if you are creating a new file.")
+  def load(self, f):
+    self.__data = PyVDF.read(f)
 
-  def load_string(self, string):
-    self.data = PyVDF.parse(string)
+  def loads(self, data):
+    self.__data = PyVDF.reads(data)
 
   def getData(self):
-    return self.data
+    try:
+      return self.__data
+    except AttributeError:
+      return self.__UseDict()
 
   def setData(self, data):
-    self.data = data
+    self.__data = data
 
   def find(self, path):
-    p = [re.sub('[\[\]]', '', w) for w in PyVDF._RE_Path_Seperator.findall(path)]
-    array = self.data
+    p = [re.sub('[\[\]]', '', w) for w in PyVDF.__RE_Path_Seperator.findall(path)]
+    array = self.getData()
     for c in p:
       try:
         array = array[c]
@@ -237,9 +345,9 @@ class PyVDF:
     return array
 
   def edit(self, path, value):
-    _dict = PyVDF._UseDict
-    p = [re.sub('[\[\]]', '', w) for w in PyVDF._RE_Path_Seperator.finall(path)]
-    array = self.data
+    _dict = PyVDF.__UseDict
+    p = [re.sub('[\[\]]', '', w) for w in PyVDF.__RE_Path_Seperator.finall(path)]
+    array = self.getData()
     a = array
     for c in p[:-1]:
       try:
@@ -252,7 +360,7 @@ class PyVDF:
       a.pop(p[-1], None)
     else:
       a[p[-1]] = value
-    self.data = array
+    self.__data = array
 
   def findMany(self, paths):
     return map(self.find, paths)
@@ -260,13 +368,41 @@ class PyVDF:
   def editMany(self, paths):
     map((lambda p, v: self.edit(p, v)), paths)
 
-  def write_file(self, filename):
-    self.writeData(filename, self.data)
+  def write_file(self, f):
+    self.writeData(f, self.__data)
 
   def toString(self):
-    return PyVDF.formatData(self.data)
+    return PyVDF.formatData(self.__data)
+
+# TODO - Json
 
   # def toJson(self):
-  #   for k, v in
+
 
   # def fromJson(self):
+
+
+# Make PyVDF module callable.
+class _Black_Magic(types.ModuleType):
+  def __init__(self):
+    super(_Black_Magic, self).__init__('PyVDF')
+    self._realmod = sys.modules['PyVDF']
+    sys.modules['PyVDF'] = self
+    self.__doc__ = PyVDF.__doc__
+    self.useFastDict = PyVDF.useFastDict
+    self.setIndention = PyVDF.setIndention
+    self.setSpacing = PyVDF.setSpacing
+    self.setCondensed = PyVDF.setCondensed
+    self.setMaxTokenLength = PyVDF.setMaxTokenLength
+    self.read = PyVDF.read
+    self.reads = PyVDF.reads
+    self.formatData = PyVDF.formatData
+    self.writeData = PyVDF.writeData
+  def __dir__(self):
+    return dir(self._realmod)
+  def __call__(self, *args, **kw):
+    return self._realmod.PyVDF(*args, **kw)
+  def __getattr__(self, attr):
+    return getattr(self._realmod, attr)
+
+_Black_Magic()
