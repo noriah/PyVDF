@@ -300,7 +300,7 @@ class PyVDF:
     spacing = PyVDF.__OutputSpacing
     def loop(array, tab=''):
       string = ''
-      for k, v in array.iteritems():
+      for k, v in array.items():
         string += '{}"{}"'.format(tab,k)
         if isinstance(v, dict):
           string += '{}{{\n{}{}}}\n'.format(
