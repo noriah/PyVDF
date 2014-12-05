@@ -158,7 +158,7 @@ class PyVDF:
     PyVDF.__UseDict = dict if var else odict
 
   @staticmethod
-  def setIndention(var = "\t"):
+  def setIndentation(var = "\t"):
     PyVDF.__OutputIndentation = var
 
   @staticmethod
@@ -351,7 +351,7 @@ class PyVDF:
 
   def edit(self, path, value):
     _dict = PyVDF.__UseDict
-    p = [re.sub('[\[\]]', '', w) for w in PyVDF.__RE_Path_Seperator.finall(path)]
+    p = [re.sub('[\[\]]', '', w) for w in PyVDF.__RE_Path_Seperator.findall(path)]
     array = self.getData()
     a = array
     for c in p[:-1]:
@@ -371,7 +371,7 @@ class PyVDF:
     return map(self.find, paths)
 
   def editMany(self, paths):
-    map((lambda p, v: self.edit(p, v)), paths)
+    map((lambda p: self.edit(p[0], p[1])), paths)
 
   def write_file(self, f):
     self.writeData(f, self.__data)
@@ -395,7 +395,7 @@ class _Black_Magic(types.ModuleType):
     sys.modules['PyVDF'] = self
     self.__doc__ = PyVDF.__doc__
     self.useFastDict = PyVDF.useFastDict
-    self.setIndention = PyVDF.setIndention
+    self.setIndentation = PyVDF.setIndentation
     self.setSpacing = PyVDF.setSpacing
     self.setCondensed = PyVDF.setCondensed
     self.setMaxTokenLength = PyVDF.setMaxTokenLength
