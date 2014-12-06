@@ -83,11 +83,11 @@ except Exception:
 Error.setData({"apple": ['apples']})
 Error.write_file('./')
 
-Error.setData(
 
 Food.load('tests/test.vdf')
 Food.loads('"Apples"{"NoApplesHere" "Nope"}')
 
+Food.load('tests/newlines.vdf')
 
 Empty.write_file('menu.cfg')
 
