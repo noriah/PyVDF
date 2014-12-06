@@ -87,7 +87,7 @@ Error.write_file('./')
 Food.load('tests/test.vdf')
 Food.loads('"Apples"{"NoApplesHere" "Nope"}')
 
-Food.load('tests/newlines.vdf')
+# Food.load('tests/newlines.vdf')
 
 Empty.write_file('menu.cfg')
 
