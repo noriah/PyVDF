@@ -81,6 +81,9 @@ except Exception:
   print("Pass - Bad Data")
 
 Error.setData({"apple": ['apples']})
+
+Error['apple.pie'] = None
+
 Error.write_file('./')
 
 
