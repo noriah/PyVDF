@@ -229,10 +229,11 @@ class PyVDF:
         elif char == '\n':
           line += 1
 
-        elif char == '\r':
-          if s[ci + 1] == '\n':
-            ci += 1
-          line += 1
+        # elif char == '\r':
+        #   print("a" + s[ci + 1])
+        #   if s[ci + 1] == '\n':
+        #     ci += 1
+        #   line += 1
           
         elif char == '{':
           if grabKey:

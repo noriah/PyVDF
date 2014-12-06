@@ -9,7 +9,6 @@ install:
   - pip install coveralls
 
 script:
-  - python vdftest.py
   - "coverage run --source=PyVDF vdftest.py"
 after_success:
   coveralls

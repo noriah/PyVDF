@@ -80,8 +80,10 @@ try:
 except Exception:
   print("Pass - Bad Data")
 
-Error.setData(dict())
+Error.setData({"apple": ['apples']})
 Error.write_file('./')
+
+Error.setData(
 
 Food.load('tests/test.vdf')
 Food.loads('"Apples"{"NoApplesHere" "Nope"}')
