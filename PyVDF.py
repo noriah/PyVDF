@@ -315,11 +315,14 @@ class PyVDF:
     try:
       f.write(data)
     except AttributeError:
+      pass
+    
+    try:
       filec = open(f, 'w')
       filec.write(data)
       filec.close()
     except IOError as e:
-      print("Could not open '" + filename + "' for writing.")
+      print("Could not open '" + f + "' for writing.")
       print(e)
     
   def load(self, f):

@@ -76,11 +76,15 @@ try:
   Error = PyVDF()
   Error['Nope.Nope'] = None
   Error.setData(list())
+  Error.write_file('PyVDF.py')
 except Exception:
   print("Pass - Bad Data")
 
+Error.setData(dict())
+Error.write_file('./')
+
 Food.load('tests/test.vdf')
-Food.load('"Apples"{"NoApplesHere" "Nope"}')
+Food.loads('"Apples"{"NoApplesHere" "Nope"}')
 
 
 Empty.write_file('menu.cfg')
