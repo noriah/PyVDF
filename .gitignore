@@ -5,6 +5,8 @@ __pycache__
 dist
 build
 
+README.rst
+
 #test Files
 
 menu.cfg
