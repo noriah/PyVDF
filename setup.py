@@ -15,17 +15,13 @@ class PyTest(TestCommand):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
-
-here = os.path.abspath(os.path.dirname(__file__))
-
-def read(*parts):
-    return codecs.open(os.path.join(here, *parts), 'r').read()
-
 setup(
     name='PyVDF',
     version='1.0.4',
     tests_require=['pytest'],
-    packages=['PyVDF'],
+    packages= [
+        'PyVDF',
+    ],
     url='https://github.com/noriah/PyVDF',
     author='noriah',
     author_email='vix@noriah.dev',
