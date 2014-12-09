@@ -79,7 +79,9 @@ class RunTests(unittest.TestCase):
 
   def test_set_data_valid(self):
     Food = PyVDF()
+    Food.load('tests/test.vdf')
     Food.loads('"Apples"{"NoApplesHere" "Nope"}')
+    Food.toString()
 
   def test_write_file_static(self):
     PyVDF.useFastDict(False)

@@ -372,7 +372,8 @@ class PyVDF:
     return map(self.find, paths)
 
   def editMany(self, paths):
-    map((lambda p: self.edit(p[0], p[1])), paths)
+    [self.edit(v[0], v[1]) for v in paths]
+      
 
   def write_file(self, f):
     PyVDF.writeData(f, self.__data)
