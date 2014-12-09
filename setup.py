@@ -22,6 +22,7 @@ setup(
     packages= [
         'PyVDF',
     ],
+    license='MIT',
     url='https://github.com/noriah/PyVDF',
     author='noriah',
     author_email='vix@noriah.dev',
