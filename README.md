@@ -11,7 +11,7 @@ https://developer.valvesoftware.com/wiki/KeyValues
 All functionality is provided through the PyVDF module.
 import it and call it to create an instance, or just call the static methods off the import.
 
-### Basic Usage
+## Basic Usage
 ```python
 from PyVDF import PyVDF
 Foo = PyVDF()

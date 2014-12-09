@@ -137,9 +137,9 @@ class PyVDF:
 
   def __init__(self, data=None, infile=None):
     if data != None:
-      self.__data = self.reads(data)
+      self.__data = PyVDF.reads(data)
     elif infile != None:
-      self.__data = self.read(infile)
+      self.__data = PyVDF.read(infile)
     return
 
   def __getitem__(self, key):
@@ -335,7 +335,7 @@ class PyVDF:
     try:
       return self.__data
     except AttributeError:
-      return self.__UseDict()
+      return PyVDF.__UseDict()
 
   def setData(self, data):
     self.__data = data
@@ -375,7 +375,7 @@ class PyVDF:
     map((lambda p: self.edit(p[0], p[1])), paths)
 
   def write_file(self, f):
-    self.writeData(f, self.__data)
+    PyVDF.writeData(f, self.__data)
 
   def toString(self):
     return PyVDF.formatData(self.__data)
