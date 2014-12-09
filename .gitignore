@@ -6,7 +6,7 @@ __pycache__
 dist
 build
 
-README.rst
+*.rst
 
 #test Files
 
