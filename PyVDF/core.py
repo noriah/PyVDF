@@ -43,7 +43,7 @@ class PyVDF:
     ...     "Cobbler"        "Great"
     ... }'''
 
-    >>> from PyVDF import PyVDF
+    >>> import PyVDF
     >>> apple = PyVDF(food)
     >>> apple.find('Apple.Pie')
     'Good'
