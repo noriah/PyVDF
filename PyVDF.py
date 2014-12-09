@@ -184,6 +184,8 @@ class PyVDF:
       print("Could not open '" + f + "' for reading.")
       print("Ignore this if you are creating a new file.")
 
+    return PyVDF.__UseDict()
+
   @staticmethod
   def reads(s):
     _dict = PyVDF.__UseDict

@@ -23,7 +23,7 @@ def read(*parts):
 
 setup(
     name='PyVDF',
-    version='1.0.2',
+    version='1.0.3',
     tests_require=['pytest'],
     py_modules=['PyVDF'],
     url='https://github.com/noriah/PyVDF',
