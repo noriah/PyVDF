@@ -19,9 +19,7 @@ setup(
     name='PyVDF',
     version='1.0.4',
     tests_require=['pytest'],
-    packages= [
-        'PyVDF',
-    ],
+    packages= ['PyVDF'],
     license='MIT',
     url='https://github.com/noriah/PyVDF',
     author='noriah',
