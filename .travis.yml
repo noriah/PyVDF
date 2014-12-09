@@ -6,7 +6,8 @@ python:
   - "3.4"
 
 install:
-  python setup.py develop
+  - pip install coveralls
+  - pip install pytest
 
 script:
   - "coverage run --source=PyVDF setup.py test"
