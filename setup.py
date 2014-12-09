@@ -1,5 +1,6 @@
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
+import PyVDF
 import sys
 import codecs
 import os
@@ -17,7 +18,7 @@ class PyTest(TestCommand):
 
 setup(
     name='PyVDF',
-    version='1.0.4',
+    version=PyVDF.__version__,
     tests_require=['pytest'],
     packages= ['PyVDF'],
     license='MIT',

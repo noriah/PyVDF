@@ -117,6 +117,8 @@ class PyVDF:
 
   """
 
+  __version__ = "1.0.4"
+
   __UseDict = dict
   __OutputIndentation = "\t"
   __OutputSpacing = "\t\t"
