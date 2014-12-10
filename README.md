@@ -153,4 +153,3 @@ FooBar = PyVDF.reads(StringOData)
 ##### formatData(dict data)
 
 ##### writeData(file/filename f, dict data)
-
