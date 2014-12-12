@@ -1,0 +1,224 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>
+    Examples -
+    
+    PyVDF Documentation
+  </title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  <link rel="stylesheet" href="_static/css/amr.css" type="text/css" />
+    <link rel="top" title="None" href="index.html"/>
+        <link rel="prev" title="API" href="API.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> PyVDF Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="API.html#methods">Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API.html#class-details">Class Details</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-pyvdf">Using PyVDF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#read-a-file">Read a File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#read-a-string">Read a String</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#find-multiple-values">Find Multiple Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#edit-multiple-values">Edit Multiple Values</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="main">
+            
+  <div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<div class="section" id="using-pyvdf">
+<h2>Using PyVDF<a class="headerlink" href="#using-pyvdf" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">PyVDF</span>
+<span class="n">vdf</span> <span class="o">=</span> <span class="n">PyVDF</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="read-a-file">
+<h2>Read a File<a class="headerlink" href="#read-a-file" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Class Methods</span>
+<span class="n">vdf</span> <span class="o">=</span> <span class="n">PyVDF</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="s">&#39;/path/to/file&#39;</span><span class="p">)</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">vdf</span><span class="p">[</span><span class="s">&#39;Path.to.Key&#39;</span><span class="p">]</span>
+
+<span class="c"># Static Methods</span>
+<span class="n">vdf</span> <span class="o">=</span> <span class="n">PyVDF</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s">&#39;/path/to/file&#39;</span><span class="p">)</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">vdf</span><span class="p">[</span><span class="s">&#39;Path&#39;</span><span class="p">][</span><span class="s">&#39;to&#39;</span><span class="p">][</span><span class="s">&#39;Key&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="read-a-string">
+<h2>Read a String<a class="headerlink" href="#read-a-string" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">food</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;</span>
+<span class="s">&quot;Apple&quot;</span>
+<span class="s">{</span>
+<span class="s">    &quot;Pie&quot;    &quot;Good&quot;</span>
+<span class="s">    &quot;Cobbler&quot;    &quot;Great&quot;</span>
+<span class="s">}&#39;&#39;&#39;</span>
+
+<span class="c"># Class Methods</span>
+<span class="n">vdf</span> <span class="o">=</span> <span class="n">PyVDF</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">food</span><span class="p">)</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">vdf</span><span class="p">[</span><span class="s">&#39;Apple.Pie&#39;</span><span class="p">]</span>
+
+<span class="c"># Static Methods</span>
+<span class="n">vdf</span> <span class="o">=</span> <span class="n">PyVDF</span><span class="o">.</span><span class="n">reads</span><span class="p">(</span><span class="s">&#39;/path/to/file&#39;</span><span class="p">)</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">vdf</span><span class="p">[</span><span class="s">&#39;Apple&#39;</span><span class="p">][</span><span class="s">&#39;Pie&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="find-multiple-values">
+<h2>Find Multiple Values<a class="headerlink" href="#find-multiple-values" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">vdf</span><span class="o">.</span><span class="n">findMany</span><span class="p">([</span><span class="s">&#39;Apple.Pie&#39;</span><span class="p">,</span> <span class="s">&#39;Apple.Cobbler&#39;</span><span class="p">])</span>
+<span class="s">&quot;[&#39;Good&#39;,&#39;Great&#39;]&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="edit-multiple-values">
+<h2>Edit Multiple Values<a class="headerlink" href="#edit-multiple-values" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">vdf</span><span class="o">.</span><span class="n">editMany</span><span class="p">([(</span><span class="s">&#39;Apple.Pie&#39;</span><span class="p">,</span><span class="s">&#39;Pumpkin&#39;</span><span class="p">),</span>
+              <span class="p">(</span><span class="s">&#39;Apple.Cobbler&#39;</span><span class="p">,</span> <span class="s">&#39;Pie&#39;</span><span class="p">)])</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+
+      <div class="fixed-bar">
+        <table class="navigation" summary="Navigation header" cellpadding="2" cellspacing="10" width="100%"><tbody><tr valign="middle">
+
+<td class="open-sidebar" style="display:none"><a href="./../index.html#"><i class="fa fa-search"></i></a></td>
+
+<td class="shortcuts" align="left" width="100%">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">PyVDF 1.0.4 Documentation</a> &raquo;</li>
+      
+    <li>Examples</li>
+  </ul>
+</td>
+<td class="copy">&copy; Copyright 2014, Austin Reuland</td>
+<!--
+<td>Last updated on Dec 12, 2014.</td> -->
+<td><a accesskey="h" href="index.html"><i class="fa fa-home"></i></a></td>
+
+
+<td><i class="fa fa-chevron-up"></i></td>
+
+
+
+<td><a accesskey="p" href="API.html"><i class="fa fa-chevron-left"></i></a></td>
+
+
+
+<td><i class="fa fa-chevron-right"></i></td>
+
+
+</tr></tbody>
+</table>
+
+<div class="local-toc">
+    <ul>
+<li><a class="reference internal" href="#">Examples</a><ul>
+<li><a class="reference internal" href="#using-pyvdf">Using PyVDF</a></li>
+<li><a class="reference internal" href="#read-a-file">Read a File</a></li>
+<li><a class="reference internal" href="#read-a-string">Read a String</a></li>
+<li><a class="reference internal" href="#find-multiple-values">Find Multiple Values</a></li>
+<li><a class="reference internal" href="#edit-multiple-values">Edit Multiple Values</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+          URL_ROOT:'./',
+          VERSION:'1.0.4',
+          COLLAPSE_INDEX:false,
+          FILE_SUFFIX:'.html',
+          HAS_SOURCE:  true
+      };
+  </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script> 
+
+</body>
+</html>
