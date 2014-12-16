@@ -1,123 +1,14 @@
-'''
-Copyright (c) 2014 noriah vix@noriah.dev
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software isfurnished
-to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-'''
-
-__all__ = ['PyVDF']
-
 import re
-import sys
-import types
 from collections import OrderedDict, deque
 
 #############
 # PyVDF #
 #############
 class PyVDF:
-  """Parse VDFs and Valve KeyValue Files
-
-  https://developer.valvesoftware.com/wiki/KeyValues
-
-
-    >>> food = '''
-    ... "Apple"
-    ... {
-    ...     "Pie"   "Good"
-    ...     "Cobbler"        "Great"
-    ... }'''
-
-    >>> import PyVDF
-    >>> apple = PyVDF(food)
-    >>> apple.find('Apple.Pie')
-    'Good'
-    
-    >>> apple.findMany(['Apple.Pie','Apple.Cobbler'])
-    ['Good','Great']
-
-
-  Load a file
-
-    >>> apple.load(file instance/filename)
-
-  Load a string
-
-    >>> apple.loads(data)
-
-  As a Static Method
-
-    >>> apple = PyVDF.read(food)
-    >>> apple['Apple']['Pie']
-    'Good'
-
-  Use OrderedDict instead of dict
-
-    >>> PyVDF.useFastDict(False)
-
-  Output Data as a String
-
-    * Using Class Method on PyVDF instance
-    apple.toString()
-    '"Apple"\n{\n\t"Cobbler"\t\t"Great"\n\t"Pie"\t\t"Good"\n}\n'
-
-    * Using Static Method on Dictionary
-    >>> PyVDF.formatData(apple)
-    '"Apple"\n{\n\t"Cobbler"\t\t"Great"\n\t"Pie"\t\t"Good"\n}\n'
-
-  Set Condensed Output (Curly Braces on same line as Key)
-    
-    >>> PyVDF.setCondensed(True)
-    >>> PyVDF.formatData(apple)
-    '"Apple"{\n\t"Cobbler"\t\t"Great"\n\t"Pie"\t\t"Good"\n}\n'
-
-  Set Output Spacing and/or Indentation
-
-    >>> PyVDF.setIndention('\t\t\t')
-    >>> PyVDF.setSpacing('What a Terrible Spacer')
-
-    >>> PyVDF.formatData(apple)
-    '"Apple"\n{\n\t\t\t"Cobbler"What a Terrible Spacer"Great"\n\t\t\t"Pie"What a Terrible Spacer"Good"\n}\n'
-
-  Set Maximum Token length (Outline from valve says Max of 1024,
-  but they broke their own rule) Default is 1200
-
-    >>> PyVDF.setMaxTokenLength(2000)
-
-  Write a file
-
-    * Static Method
-    >>> PyVDF.writeData(file instance/filename, apple)
-
-    * PyVDF Instance
-    >>> apple.write_file(file instance/filename)
-
-  Get Data from Instance
-
-    >>> apple.getData()
-
-  Set Instance data
-
-    >>> apple.setData(apple_new)
-
-  """
+  """Parse VDFs and Valve KeyValue Files"""
 
   __version__ = "1.0.4"
+  __release__ = "1.0.4"
 
   __UseDict = dict
   __OutputIndentation = "\t"
@@ -152,26 +43,65 @@ class PyVDF:
 
   @staticmethod
   def useFastDict(var = True):
+    """
+    Use the faster built-in dict class, or the slower, OrderedDict class
+
+    :param var: Use fast dict or not.
+    :type var: :py:obj:`bool`
+    """
+
     PyVDF.__UseDict = dict if var else OrderedDict
 
   @staticmethod
   def setIndentation(var = "\t"):
+    """
+    Set the indentation of the output
+
+    :param var: The indentation to use
+    :type var: :py:obj:`str`
+    """
     PyVDF.__OutputIndentation = var
 
   @staticmethod
   def setSpacing(var = "\t\t"):
+    """
+    Set the output spacing
+
+    :param var: The characters to use for spacing
+    :type var: :py:obj:`str`
+    """
     PyVDF.__OutputSpacing = var
 
   @staticmethod
   def setCondensed(var = False):
+    """
+    Set condensed output
+
+    :param var: Use condensed output or not
+    :type var: :py:obj:`bool`
+    """
     PyVDF.__CondensedOutput = var
 
   @staticmethod
   def setMaxTokenLength(var = 1024):
+    """
+    Set the maxmimum token length that can be read.
+
+    :param var: Number of characters allowed in a token
+    :type var: :py:obj:`int`
+    """
     PyVDF.__MaxTokenLength = var
 
   @staticmethod
   def read(f):
+    """
+    Parse a String and return the data
+
+    :param f: The file to read
+    :type f: file/str
+    :returns: A dictionary object containing the parsed data from f
+    :raises: SyntaxError - An error occured reading the data.
+    """
     try:
       return PyVDF.reads(f.read())
     except AttributeError:
@@ -190,6 +120,14 @@ class PyVDF:
 
   @staticmethod
   def reads(s):
+    """
+    Parse a String and return the data
+
+    :param s: The string to read
+    :type s: :py:obj:`str`
+    :returns: A dict object containing the data from s
+    :raises: SyntaxError - An error occured reading the data.
+    """
     _dict = PyVDF.__UseDict
     _len = len
     _whitespace = frozenset('\t ')
@@ -294,6 +232,14 @@ class PyVDF:
 
   @staticmethod
   def formatData(data):
+    """
+    Format a dictionary object to look like a VDF file
+
+    :param data: Data
+    :type data: :py:obj:`dict`
+
+    :returns: A vdf string representation of data
+    """
     condensed = PyVDF.__CondensedOutput
     indentation = PyVDF.__OutputIndentation
     spacing = PyVDF.__OutputSpacing
@@ -313,6 +259,14 @@ class PyVDF:
 
   @staticmethod
   def writeData(f, data):
+    """
+    Write a dictionary object to a file
+
+    :param f: The file to write to
+    :type f: file/string
+    :param data: The data to write to the file
+    :type data: dict
+    """
     if not isinstance(data, dict):
       raise Exception(PyVDF.__ERR_NotDict.format(repr(data)))
     data = PyVDF.formatData(data)
@@ -330,21 +284,53 @@ class PyVDF:
       print(e)
     
   def load(self, f):
+    """
+    Parse a file and return a dictionary object
+
+    :param f: The file to read
+    :type f: file/string
+    :returns: A dict object containing the data from s
+    :raises: SyntaxError - An error occured reading the data
+    """
     self.__data = PyVDF.read(f)
 
   def loads(self, data):
+    """
+    Parse a string and return a dictionary object
+
+    :param data: The data to read
+    :type data: :py:obj:`str`
+    :returns: A dict object containing the data from s
+    :raises: SyntaxError - An error occured reading the data.
+    """
     self.__data = PyVDF.reads(data)
 
   def getData(self):
+    """
+    Get the instance data
+    """
     try:
       return self.__data
     except AttributeError:
       return PyVDF.__UseDict()
 
   def setData(self, data):
+    """
+    Set the data of the instance
+
+    :param data: The data
+    :type data: :py:obj:`dict`
+    """
     self.__data = data
 
   def find(self, path):
+    """
+    Find a value
+
+    :param path: The Key path to search for
+    :type path: :py:obj:`str`
+    :returns: The found value or an empty string if not found.
+    """
     p = [re.sub('[\[\]]', '', w) for w in PyVDF.__RE_Path_Seperator.findall(path)]
     array = self.getData()
     for c in p:
@@ -355,6 +341,14 @@ class PyVDF:
     return array
 
   def edit(self, path, value):
+    """
+    Edit a key value
+
+    :param path: The path key for the value
+    :type path: :py:obj:`str`
+    :param value: The value to be set
+    :type value: :py:obj:`str`
+    """
     _dict = PyVDF.__UseDict
     p = [re.sub('[\[\]]', '', w) for w in PyVDF.__RE_Path_Seperator.findall(path)]
     array = self.getData()
@@ -373,16 +367,41 @@ class PyVDF:
     self.__data = array
 
   def findMany(self, paths):
+    """
+    Find multiple values
+
+    :param paths: A list of path strings
+    :type paths: :py:obj:`str`
+    :returns: The found value or an empty string if not found.
+    """
     return map(self.find, paths)
 
   def editMany(self, paths):
+    """
+    Edit multiple key values
+
+    :param path: A list or tupple of lists or tupples.
+    :type path: tuple
+    """
     [self.edit(v[0], v[1]) for v in paths]
       
 
   def write_file(self, f):
+    """
+    write the instance data to a file
+
+    :param f: The file to write to
+    :type f: :py:obj:`str`
+    """
     PyVDF.writeData(f, self.__data)
 
   def toString(self):
+    """
+    return the instance data as a vdf string
+
+    :returns: A string of the instance data, in a vdf format
+    :rtype: :py:obj:`str`
+    """
     return PyVDF.formatData(self.__data)
 
 # TODO - Json
