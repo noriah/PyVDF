@@ -5,6 +5,10 @@ Parse VDFs and Valve KeyValue Files
 [![Build Status](https://img.shields.io/travis/noriah/PyVDF.svg?branch=master&style=flat-square)](https://travis-ci.org/noriah/PyVDF)[![PyPI version](https://img.shields.io/pypi/v/pyvdf.svg?style=flat-square)](https://pypi.python.org/pypi/PyVDF)[![Coverage Status](https://img.shields.io/coveralls/noriah/PyVDF.svg?style=flat-square)](https://coveralls.io/r/noriah/PyVDF)[![Downloads](https://img.shields.io/pypi/dm/PyVDF.svg?style=flat-square)](https://pypi.python.org/pypi/PyVDF)
 
 
+###Documentation
+https://noriah.github.io/PyVDF
+
+
 https://developer.valvesoftware.com/wiki/KeyValues
 
 ## API
