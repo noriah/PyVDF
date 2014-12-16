@@ -1,4 +1,4 @@
-docs
+docs/_build
 _sources
 objects.inv
 *.pyc

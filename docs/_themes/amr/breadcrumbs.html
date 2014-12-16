@@ -1,0 +1,47 @@
+<table class="navigation" summary="Navigation header" cellpadding="2" cellspacing="10" width="100%"><tbody><tr valign="middle">
+{% if not embedded %}
+<td class="open-sidebar" style="display:none"><a href="{{ url_root }}../index.html#{{ pgi_docgen_path }}"><i class="fa fa-search"></i></a></td>
+{% endif %}
+<td class="shortcuts" align="left" width="100%">
+  <ul class="wy-breadcrumbs">
+    <li><a href="{{ pathto(master_doc) }}">{{ shorttitle }}</a> &raquo;</li>
+      {% for doc in parents %}
+          <li><a href="{{ doc.link|e }}">{{ doc.title }}</a> &raquo;</li>
+      {% endfor %}
+    <li>{{ title }}</li>
+  </ul>
+</td>
+
+{%- if show_copyright %}
+<td class="copy">{% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}{% endtrans %}</td>
+{%- endif %}
+<!-- 
+{%- if last_updated %}
+<td>{% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}</td>
+{%- endif %} -->
+<td><a accesskey="h" href="{{ pathto('index') }}"><i class="fa fa-home"></i></a></td>
+
+{% if parents %}
+<td><a accesskey="u" href="{{ parents[-1].link|e }}"><i class="fa fa-chevron-up"></i></a></td>
+{% else %}
+<td><i class="fa fa-chevron-up"></i></td>
+{% endif %}
+
+{% if prev %}
+<td><a accesskey="p" href="{{ prev.link|e }}"><i class="fa fa-chevron-left"></i></a></td>
+{% else %}
+<td><i class="fa fa-chevron-left"></i></td>
+{% endif %}
+
+{% if next %}
+<td><a accesskey="n" href="{{ next.link|e }}"><i class="fa fa-chevron-right"></i></a></td>
+{% else %}
+<td><i class="fa fa-chevron-right"></i></td>
+{% endif %}
+
+</tr></tbody>
+</table>
+
+<div class="local-toc">
+    {{ toc }}
+</div>
