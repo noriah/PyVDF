@@ -122,7 +122,7 @@
 <td><a class="reference internal" href="#PyVDF.core.PyVDF.read" title="PyVDF.core.PyVDF.read"><tt class="xref py py-obj docutils literal"><span class="pre">read</span></tt></a>(f)</td>
 </tr>
 <tr class="row-odd"><td><em>static</em></td>
-<td><a class="reference internal" href="#PyVDF.core.PyVDF.reads" title="PyVDF.core.PyVDF.reads"><tt class="xref py py-obj docutils literal"><span class="pre">reads</span></tt></a>(data)</td>
+<td><a class="reference internal" href="#PyVDF.core.PyVDF.reads" title="PyVDF.core.PyVDF.reads"><tt class="xref py py-obj docutils literal"><span class="pre">reads</span></tt></a>(s)</td>
 </tr>
 <tr class="row-even"><td><em>static</em></td>
 <td><a class="reference internal" href="#PyVDF.core.PyVDF.formatData" title="PyVDF.core.PyVDF.formatData"><tt class="xref py py-obj docutils literal"><span class="pre">formatData</span></tt></a>(data)</td>
@@ -167,113 +167,73 @@
 <h2>Class Details<a class="headerlink" href="#class-details" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="PyVDF.core.PyVDF">
-<em class="property">class </em><tt class="descname">PyVDF</tt><big>(</big><em>data=None</em>, <em>infile=None</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">PyVDF</tt><big>(</big><em>data=None</em>, <em>infile=None</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse VDFs and Valve KeyValue Files</p>
-<dl class="method">
-<dt id="PyVDF.core.PyVDF.edit">
-<tt class="descname">edit</tt><big>(</big><em>path</em>, <em>value</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.edit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Edit a key value</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="PyVDF.core.PyVDF.editMany">
-<tt class="descname">editMany</tt><big>(</big><em>paths</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.editMany" title="Permalink to this definition">¶</a></dt>
-<dd><p>Edit multiple key values</p>
+<dl class="staticmethod">
+<dt id="PyVDF.core.PyVDF.useFastDict">
+<em class="property">static </em><tt class="descname">useFastDict</tt><big>(</big><em>var=True</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.useFastDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.useFastDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the faster built-in dict class, or the slower, OrderedDict class</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>paths</strong> &#8211; A list or tupple of lists or tupples.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="PyVDF.core.PyVDF.find">
-<tt class="descname">find</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.find" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find a value</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> &#8211; The Key path to search for</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The found value or an empty string if not found.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="PyVDF.core.PyVDF.findMany">
-<tt class="descname">findMany</tt><big>(</big><em>paths</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.findMany" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find multiple values</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>paths</strong> (<em>str</em>) &#8211; A list of path strings</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The found value or an empty string if not found. <a class="reference internal" href="Examples.html"><em>Examples</em></a></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">bool</span></tt>) &#8211; Use fast dict or not.</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="staticmethod">
-<dt id="PyVDF.core.PyVDF.formatData">
-<em class="property">static </em><tt class="descname">formatData</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.formatData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format a dictionary object to look like a VDF file</p>
+<dt id="PyVDF.core.PyVDF.setIndentation">
+<em class="property">static </em><tt class="descname">setIndentation</tt><big>(</big><em>var='t'</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.setIndentation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.setIndentation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the indentation of the output</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">dict</span></tt>) &#8211; Data</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A vdf string representation of <cite>data</cite></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The indentation to use</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="PyVDF.core.PyVDF.getData">
-<tt class="descname">getData</tt><big>(</big><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.getData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the instance data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="PyVDF.core.PyVDF.load">
-<tt class="descname">load</tt><big>(</big><em>f</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse a file and return a dictionary object</p>
+<dl class="staticmethod">
+<dt id="PyVDF.core.PyVDF.setSpacing">
+<em class="property">static </em><tt class="descname">setSpacing</tt><big>(</big><em>var='tt'</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.setSpacing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.setSpacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the output spacing</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> (<em>file/string</em>) &#8211; The file to write to</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dict object containing the data from s</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">SyntaxError - An error occured reading the data.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The characters to use for spacing</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="PyVDF.core.PyVDF.loads">
-<tt class="descname">loads</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.loads" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse a string and return a dictionary object</p>
+<dl class="staticmethod">
+<dt id="PyVDF.core.PyVDF.setCondensed">
+<em class="property">static </em><tt class="descname">setCondensed</tt><big>(</big><em>var=False</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.setCondensed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.setCondensed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set condensed output</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The data to read</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">bool</span></tt>) &#8211; Use condensed output or not</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dict object containing the data from s</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">SyntaxError - An error occured reading the data.</td>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="PyVDF.core.PyVDF.setMaxTokenLength">
+<em class="property">static </em><tt class="descname">setMaxTokenLength</tt><big>(</big><em>var=1024</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.setMaxTokenLength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.setMaxTokenLength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the maxmimum token length that can be read.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">int</span></tt>) &#8211; Number of characters allowed in a token</td>
 </tr>
 </tbody>
 </table>
@@ -281,13 +241,13 @@
 
 <dl class="staticmethod">
 <dt id="PyVDF.core.PyVDF.read">
-<em class="property">static </em><tt class="descname">read</tt><big>(</big><em>f</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.read" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse a file</p>
+<em class="property">static </em><tt class="descname">read</tt><big>(</big><em>f</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a String and return the data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">file</span></tt>) &#8211; apple</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> (<em>file/str</em>) &#8211; The file to read</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dictionary object containing the parsed data from f</td>
 </tr>
@@ -299,13 +259,13 @@
 
 <dl class="staticmethod">
 <dt id="PyVDF.core.PyVDF.reads">
-<em class="property">static </em><tt class="descname">reads</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.reads" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><tt class="descname">reads</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.reads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a String and return the data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The string to read</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>s</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The string to read</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dict object containing the data from s</td>
 </tr>
@@ -316,50 +276,16 @@
 </dd></dl>
 
 <dl class="staticmethod">
-<dt id="PyVDF.core.PyVDF.setCondensed">
-<em class="property">static </em><tt class="descname">setCondensed</tt><big>(</big><em>var=False</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.setCondensed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set condensed output</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="PyVDF.core.PyVDF.setData">
-<tt class="descname">setData</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.setData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the data of the instance</p>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="PyVDF.core.PyVDF.setIndentation">
-<em class="property">static </em><tt class="descname">setIndentation</tt><big>(</big><em>var='t'</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.setIndentation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the indentation of the output</p>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="PyVDF.core.PyVDF.setMaxTokenLength">
-<em class="property">static </em><tt class="descname">setMaxTokenLength</tt><big>(</big><em>var=1024</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.setMaxTokenLength" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the maxmimum token length that can be read.</p>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="PyVDF.core.PyVDF.setSpacing">
-<em class="property">static </em><tt class="descname">setSpacing</tt><big>(</big><em>var='tt'</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.setSpacing" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the output spacing</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="PyVDF.core.PyVDF.toString">
-<tt class="descname">toString</tt><big>(</big><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.toString" title="Permalink to this definition">¶</a></dt>
-<dd><p>return the instance data as a vdf string</p>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="PyVDF.core.PyVDF.useFastDict">
-<em class="property">static </em><tt class="descname">useFastDict</tt><big>(</big><em>var=True</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.useFastDict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use the faster built-in dict class, or the slower, OrderedDict class</p>
+<dt id="PyVDF.core.PyVDF.formatData">
+<em class="property">static </em><tt class="descname">formatData</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.formatData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.formatData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format a dictionary object to look like a VDF file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var</strong> &#8211; Use fast dict or not.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">dict</span></tt>) &#8211; Data</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A vdf string representation of data</td>
 </tr>
 </tbody>
 </table>
@@ -367,7 +293,7 @@
 
 <dl class="staticmethod">
 <dt id="PyVDF.core.PyVDF.writeData">
-<em class="property">static </em><tt class="descname">writeData</tt><big>(</big><em>f</em>, <em>data</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.writeData" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><tt class="descname">writeData</tt><big>(</big><em>f</em>, <em>data</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.writeData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.writeData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a dictionary object to a file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -384,9 +310,153 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="PyVDF.core.PyVDF.load">
+<tt class="descname">load</tt><big>(</big><em>f</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a file and return a dictionary object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> (<em>file/string</em>) &#8211; The file to read</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dict object containing the data from s</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">SyntaxError - An error occured reading the data</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyVDF.core.PyVDF.loads">
+<tt class="descname">loads</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.loads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.loads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a string and return a dictionary object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The data to read</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dict object containing the data from s</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">SyntaxError - An error occured reading the data.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyVDF.core.PyVDF.getData">
+<tt class="descname">getData</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.getData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.getData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the instance data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyVDF.core.PyVDF.setData">
+<tt class="descname">setData</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.setData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.setData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the data of the instance</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">dict</span></tt>) &#8211; The data</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyVDF.core.PyVDF.find">
+<tt class="descname">find</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The Key path to search for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The found value or an empty string if not found.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyVDF.core.PyVDF.edit">
+<tt class="descname">edit</tt><big>(</big><em>path</em>, <em>value</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.edit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.edit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Edit a key value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>path</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The path key for the value</li>
+<li><strong>value</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The value to be set</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyVDF.core.PyVDF.findMany">
+<tt class="descname">findMany</tt><big>(</big><em>paths</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.findMany"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.findMany" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find multiple values</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>paths</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; A list of path strings</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The found value or an empty string if not found.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyVDF.core.PyVDF.editMany">
+<tt class="descname">editMany</tt><big>(</big><em>paths</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.editMany"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.editMany" title="Permalink to this definition">¶</a></dt>
+<dd><p>Edit multiple key values</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>tuple</em>) &#8211; A list or tupple of lists or tupples.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="PyVDF.core.PyVDF.write_file">
-<tt class="descname">write_file</tt><big>(</big><em>f</em><big>)</big><a class="headerlink" href="#PyVDF.core.PyVDF.write_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write_file</tt><big>(</big><em>f</em><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.write_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.write_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>write the instance data to a file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> (<tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt>) &#8211; The file to write to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyVDF.core.PyVDF.toString">
+<tt class="descname">toString</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PyVDF/core.html#PyVDF.toString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PyVDF.core.PyVDF.toString" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the instance data as a vdf string</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A string of the instance data, in a vdf format</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -414,7 +484,7 @@
 </td>
 <td class="copy">&copy; Copyright 2014, Austin Reuland</td>
 <!--
-<td>Last updated on Dec 12, 2014.</td> -->
+<td>Last updated on Dec 16, 2014.</td> -->
 <td><a accesskey="h" href="index.html"><i class="fa fa-home"></i></a></td>
 
 
