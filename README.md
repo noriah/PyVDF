@@ -2,6 +2,7 @@ PyVDF
 ==
 Parse VDFs and Valve KeyValue Files
 
+[![Code Climate](https://codeclimate.com/github/noriah/PyVDF/badges/gpa.svg)](https://codeclimate.com/github/noriah/PyVDF)
 [![Build Status](https://img.shields.io/travis/noriah/PyVDF.svg?branch=master&style=flat-square)](https://travis-ci.org/noriah/PyVDF)
 [![PyPI version](https://img.shields.io/pypi/v/pyvdf.svg?style=flat-square)](https://pypi.python.org/pypi/PyVDF)
 [![Coverage Status](https://img.shields.io/coveralls/noriah/PyVDF.svg?style=flat-square)](https://coveralls.io/r/noriah/PyVDF)
