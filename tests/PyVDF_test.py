@@ -1,4 +1,4 @@
-import PyVDF
+from PyVDF import PyVDF
 import pytest
 import unittest
 

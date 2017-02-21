@@ -1,6 +1,6 @@
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-import PyVDF
+from PyVDF import PyVDF
 import sys
 import codecs
 import os

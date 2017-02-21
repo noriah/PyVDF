@@ -7,8 +7,8 @@ from collections import OrderedDict, deque
 class PyVDF:
   """Parse VDFs and Valve KeyValue Files"""
 
-  __version__ = "1.0.4"
-  __release__ = "1.0.4"
+  __version__ = "2.0.0"
+  __release__ = "2.0.0"
 
   __UseDict = dict
   __OutputIndentation = "\t"
@@ -106,7 +106,7 @@ class PyVDF:
       return PyVDF.reads(f.read())
     except AttributeError:
       pass
-      
+
     try:
       with open(f, 'r') as filec:
         data = PyVDF.reads(filec.read())
@@ -132,28 +132,28 @@ class PyVDF:
     _len = len
     _whitespace = frozenset('\t ')
     _newline = frozenset('\n\r')
-    
+
     _quote_match = PyVDF.__RE_Token_Quoted.match
     _unquote_match = PyVDF.__RE_Token_UnQuoted.match
     _max_length = PyVDF.__MaxTokenLength
-    
+
     ci = 0
     line = 0
     grabKey = 1
-    
+
     data = _dict()
     tree = data
-    
+
     keys = deque()
     keyApp = keys.append
     keyPop = keys.pop
-    
+
     try:
       while 1:
-        
+
         while s[ci] in _whitespace:
           ci += 1
-        
+
         char = s[ci]
 
         if char == '"':
@@ -175,7 +175,7 @@ class PyVDF:
         #   if s[ci + 1] == '\n':
         #     ci += 1
         #   line += 1
-          
+
         elif char == '{':
           if grabKey:
             raise Exception(PyVDF.__ERR_BlockNoKey.format(line, k))
@@ -211,7 +211,7 @@ class PyVDF:
         else:
           string = _unquote_match(s[ci:ci + _max_length]).group()
           ci += _len(string)
-            
+
           if grabKey:
             k = string
             grabKey = 0
@@ -274,7 +274,7 @@ class PyVDF:
       f.write(data)
     except AttributeError:
       pass
-    
+
     try:
       filec = open(f, 'w')
       filec.write(data)
@@ -282,7 +282,7 @@ class PyVDF:
     except IOError as e:
       print("Could not open '" + f + "' for writing.")
       print(e)
-    
+
   def load(self, f):
     """
     Parse a file and return a dictionary object
@@ -384,7 +384,7 @@ class PyVDF:
     :type path: tuple
     """
     [self.edit(v[0], v[1]) for v in paths]
-      
+
 
   def write_file(self, f):
     """
@@ -410,4 +410,4 @@ class PyVDF:
 
 
   # def fromJson(self):
-  
+

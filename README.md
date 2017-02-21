@@ -21,7 +21,7 @@ import it and call it to create an instance, or just call the static methods off
 
 ## Basic Usage
 ```python
-import PyVDF
+from PyVDF import PyVDF
 Foo = PyVDF()
 Foo = PyVDF(data=StringOData)
 Foo = PyVDF(infile="/path/to/file.ext")
